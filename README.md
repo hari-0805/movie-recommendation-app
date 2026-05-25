@@ -66,6 +66,7 @@ Token sent in Authorization: Bearer header for protected routes
 All API Endpoints
 MethodEndpointAuthDescriptionPOST/auth/registerNoRegister new userPOST/auth/loginNoLogin, returns JWTGET/movies/searchNoSearch OMDb moviesGET/movies/{imdb_id}NoGet movie detailsPOST/favoritesYesAdd to favoritesGET/favoritesYesGet my favoritesDELETE/favorites/{id}YesRemove favorite
 
+
 What was implemented:
 Database Setup
 
@@ -109,4 +110,4 @@ Frontend Integration
 All forms connected to live API
 Loading spinner while fetching
 Error messages shown and auto-hide after 3 seconds
-Favorites update instantly without page refresh
+Favorites update instantly without page refreshs
