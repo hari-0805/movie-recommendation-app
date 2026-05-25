@@ -65,3 +65,48 @@ Token sent in Authorization: Bearer header for protected routes
 
 All API Endpoints
 MethodEndpointAuthDescriptionPOST/auth/registerNoRegister new userPOST/auth/loginNoLogin, returns JWTGET/movies/searchNoSearch OMDb moviesGET/movies/{imdb_id}NoGet movie detailsPOST/favoritesYesAdd to favoritesGET/favoritesYesGet my favoritesDELETE/favorites/{id}YesRemove favorite
+
+What was implemented:
+Database Setup
+
+SQLite database (movies.db) created automatically when backend starts
+SQLAlchemy ORM used for all database operations
+Two tables — users and favorites
+
+User Model
+pythonclass User(Base):
+    id       = Column(Integer, primary_key=True)
+    username = Column(String, unique=True)
+    email    = Column(String, unique=True)
+    password = Column(String)  # bcrypt hashed
+Favorites Model
+pythonclass Favorite(Base):
+    id          = Column(Integer, primary_key=True)
+    user_id     = Column(Integer, ForeignKey("users.id"))
+    imdb_id     = Column(String)
+    title       = Column(String)
+    year        = Column(String)
+    poster      = Column(String)
+    imdb_rating = Column(String)
+CRUD Operations
+
+Register → INSERT into users table
+Login → SELECT from users + verify password
+Add Favorite → INSERT into favorites table
+Get Favorites → SELECT from favorites WHERE user_id
+Delete Favorite → DELETE from favorites WHERE id
+
+Validation
+
+Pydantic validates all request data
+Duplicate email → 400 error
+Duplicate favorite → 400 error
+Invalid token → 401 error
+Movie not found → 404 error
+
+Frontend Integration
+
+All forms connected to live API
+Loading spinner while fetching
+Error messages shown and auto-hide after 3 seconds
+Favorites update instantly without page refresh
