@@ -105,33 +105,12 @@ Duplicate favorite → 400 error
 Invalid token → 401 error
 Movie not found → 404 error
 
+demo video check the link
+https://drive.google.com/file/d/1f9_1e_aHVGRiDNTktAyHy3AKKE5CEzZM/view?usp=sharing
+
 Frontend Integration
 
 All forms connected to live API
 Loading spinner while fetching
 Error messages shown and auto-hide after 3 seconds
 Favorites update instantly without page refreshs
-
-Implementation Explanation
-This is a full-stack Movie Recommendation and Search application built with a modern decoupled architecture:
-
-1. Backend (FastAPI & SQLite)
-Web Framework: Built using FastAPI to provide a fast, asynchronous, and auto-documented (Swagger) REST API.
-Database & ORM: Powered by SQLite for local data persistence and SQLAlchemy for object-relational mapping (ORM) and schema definition.
-Authentication: Features JWT-based token authorization. Passwords are encrypted using the bcrypt hashing algorithm (via passlib). Secure routes check the Authorization: Bearer <token> header on every incoming request.
-OMDb Integration: Connects securely to the external OMDb API using the asynchronous HTTP client httpx to handle search requests and movie details. The OMDb API key is hidden in server-side environment variables (.env) for security.
-Core Endpoints:
-Authentication: User registration (POST /auth/register) and login (POST /auth/login).
-Movie Search: Querying OMDb (GET /movies/search) and looking up details by ID (GET /movies/{imdb_id}).
-Favorites: Managing watchlist items via CRUD endpoints (POST, GET, DELETE on /favorites).
-Search History (Bonus): Logs past user queries (GET /history) and computes global trending keywords (GET /history/trending).
-Reviews (Bonus): Allows users to read and leave star ratings and reviews (POST, GET on /reviews).
-
-2. Frontend (React & Vite)
-State Management: Built with React using a global AuthContext to manage user sessions and login status.
-API Communication: Leverages Axios with request/response interceptors to automatically append the JWT token to outgoing headers and globally handle authentication expiry (401 errors).
-UI Features:
-Debounced search query input (500ms delay) to prevent hitting OMDb rate limits.
-Dark Mode / Light Mode styling switch.
-Visual feedback including skeleton loaders during fetching, custom rating stars, and toast alerts for operations.
-A full details popup (modal) displaying ratings, overview, and cast info.
