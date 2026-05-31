@@ -1,23 +1,30 @@
+
 import React, { useState, useEffect } from "react";
-import Navbar     from "./Navbar";
-import SearchBar  from "./SearchBar";
-import MovieCard  from "./MovieCard";
-import MovieModal from "./MovieModal";
-import Pagination from "./Pagination";
-import AuthPage   from "./AuthPage";
-import useDebounce from "./useDebounce";
+import { useAuth }       from "./context/AuthContext";
+import Navbar            from "./components/Navbar";
+import SearchBar         from "./components/SearchBar";
+import MovieCard         from "./components/MovieCard";
+import MovieModal        from "./components/MovieModal";
+import Pagination        from "./components/Pagination";
+import SkeletonCard      from "./components/SkeletonCard";
+import Toast             from "./components/Toast";
+import LoginPage         from "./pages/LoginPage";
+import FavoritesPage     from "./pages/FavoritesPage";
+import useDebounce       from "./hooks/useDebounce";
 import {
   searchMovies,
   getMovieDetails,
   getFavorites,
   addFavorite,
   removeFavorite,
-  logoutUser,
-  isLoggedIn,
-} from "./api";
+  getRecentSearches,
+  getTrendingSearches,
+} from "./api/movieApi";
 import "./App.css";
+
 function App() {
-  const [loggedIn,      setLoggedIn]      = useState(isLoggedIn());
+  const { loggedIn }  = useAuth();
+
   const [query,         setQuery]         = useState("batman");
   const [movies,        setMovies]        = useState([]);
   const [totalResults,  setTotalResults]  = useState(0);
@@ -26,24 +33,51 @@ function App() {
   const [error,         setError]         = useState("");
   const [selectedMovie, setSelectedMovie] = useState(null);
   const [favorites,     setFavorites]     = useState([]);
-  const [showFavorites, setShowFavorites] = useState(false); 
+  const [showFavorites, setShowFavorites] = useState(false);
   const [isDark,        setIsDark]        = useState(false);
+  const [toast,         setToast]         = useState(null); 
+  const [recentSearches, setRecentSearches] = useState([]);
+  const [trendingSearches, setTrendingSearches] = useState([]);
+
   const debouncedQuery = useDebounce(query, 500);
+
+  function showToast(message, type = "success") {
+    setToast({ message, type });
+  }
+
+  async function loadSearchHistory() {
+    if (!loggedIn) return;
+    try {
+      const recent = await getRecentSearches();
+      setRecentSearches(recent);
+      const trending = await getTrendingSearches();
+      setTrendingSearches(trending);
+    } catch (err) {
+      console.error("Failed to load search history", err);
+    }
+  }
+
+  useEffect(() => {
+    if (loggedIn) {
+      loadSearchHistory();
+    } else {
+      setRecentSearches([]);
+      setTrendingSearches([]);
+    }
+  }, [loggedIn]);
 
   useEffect(() => {
     if (loggedIn) {
       getFavorites()
         .then(setFavorites)
-        .catch((err) => {    
-          if (err.message.includes("401") || err.message.includes("token")) {
-            handleLogout();
-          }
-        });
+        .catch(() => setFavorites([]));
+    } else {
+      setFavorites([]);
     }
   }, [loggedIn]);
 
   useEffect(() => {
-    if (!debouncedQuery.trim()) return;
+    if (!loggedIn || !debouncedQuery.trim()) return;
 
     async function fetchMovies() {
       setLoading(true);
@@ -53,19 +87,29 @@ function App() {
         const data = await searchMovies(debouncedQuery, currentPage);
         setMovies(data.movies);
         setTotalResults(data.totalResults);
+       
+        loadSearchHistory();
       } catch (err) {
-        setError(err.message);
+        setError(err.response?.data?.detail || err.message);
       } finally {
         setLoading(false);
       }
     }
 
     fetchMovies();
-  }, [debouncedQuery, currentPage]);
+  }, [debouncedQuery, currentPage, loggedIn]);
+
+  useEffect(() => { setCurrentPage(1); }, [debouncedQuery]);
 
   useEffect(() => {
-    setCurrentPage(1);
-  }, [debouncedQuery]);
+    if (isDark) {
+      document.body.classList.add("dark");
+      document.body.classList.remove("light");
+    } else {
+      document.body.classList.add("light");
+      document.body.classList.remove("dark");
+    }
+  }, [isDark]);
 
   async function handleViewDetails(imdbID) {
     setSelectedMovie({});
@@ -83,39 +127,37 @@ function App() {
   }
 
   function getFavoriteId(imdbID) {
-    const fav = favorites.find((f) => f.imdb_id === imdbID);
-    return fav ? fav.id : null;
+    return favorites.find((f) => f.imdb_id === imdbID)?.id;
   }
 
   async function handleToggleFavorite(movie) {
-    if (!loggedIn) {
-      setError("Please login to manage favorites");
-      return;
-    }
+    if (!movie?.imdbID) return;
     try {
       if (isFavorite(movie.imdbID)) {
-        const favId = getFavoriteId(movie.imdbID);
-        await removeFavorite(favId);
-        setFavorites(favorites.filter((f) => f.imdb_id !== movie.imdbID));
+        await removeFavorite(getFavoriteId(movie.imdbID));
+        setFavorites((prev) => prev.filter((f) => f.imdb_id !== movie.imdbID));
+        showToast(`${movie.Title} removed from favorites`, "error");
       } else {
         const newFav = await addFavorite(movie);
-        setFavorites([...favorites, newFav]);
+        setFavorites((prev) => [...prev, newFav]);
+        showToast(`${movie.Title} added to favorites!`, "success");
       }
     } catch (err) {
-      setError(err.message);
+      showToast(err.response?.data?.detail || err.message, "error");
     }
-  }
-
-  function handleLogout() {
-    logoutUser();
-    setLoggedIn(false);
-    setFavorites([]);
   }
 
   if (!loggedIn) {
     return (
       <div className={`app-root ${isDark ? "dark" : "light"}`}>
-        <AuthPage onLoginSuccess={() => setLoggedIn(true)} />
+        <LoginPage onToast={showToast} />
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(null)}
+          />
+        )}
       </div>
     );
   }
@@ -123,67 +165,81 @@ function App() {
   return (
     <div className={`app-root ${isDark ? "dark" : "light"}`}>
 
+    
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+
       <Navbar
         isDark={isDark}
         onToggleTheme={() => setIsDark(!isDark)}
         watchlistCount={favorites.length}
-        onLogout={handleLogout}
         onShowFavorites={() => setShowFavorites(!showFavorites)}
       />
 
       <main className="main">
-       
-
+        
         <SearchBar query={query} onChange={setQuery} />
 
-        {showFavorites && (
-          <div className="favorites-panel">
-            <h3 className="fav-heading">My Favorites ({favorites.length})</h3>
-            {favorites.length === 0 ? (
-              <p className="fav-empty">No favorites added yet.</p>
-            ) : (
-              <div className="fav-list">
-                {favorites.map((fav) => (
-                  <div key={fav.id} className="fav-item">
-                    <img
-                      src={fav.poster || "https://placehold.co/50x70?text=N/A"}
-                      alt={fav.title}
-                      className="fav-poster"
-                    />
-                    <div className="fav-info">
-                      <p className="fav-title">{fav.title}</p>
-                      <p className="fav-year">{fav.year} •  {fav.imdb_rating}</p>
-                    </div>
-                    <button
-                      className="fav-remove"
-                      onClick={() => handleToggleFavorite({ imdbID: fav.imdb_id, Title: fav.title, Year: fav.year, Poster: fav.poster, imdbRating: fav.imdb_rating })}
-                    >
-                      ✕
-                    </button>
-                  </div>
+        {loggedIn && (recentSearches.length > 0 || trendingSearches.length > 0) && (
+          <div className="history-container">
+            {recentSearches.length > 0 && (
+              <div className="history-row">
+                <span className="history-label">Recent:</span>
+                {recentSearches.slice(0, 5).map((item) => (
+                  <button
+                    key={item.id}
+                    className="chip"
+                    onClick={() => setQuery(item.keyword)}
+                  >
+                     {item.keyword}
+                  </button>
+                ))}
+              </div>
+            )}
+            {trendingSearches.length > 0 && (
+              <div className="history-row" style={{ marginTop: "4px" }}>
+                <span className="history-label">Trending 🔥:</span>
+                {trendingSearches.slice(0, 5).map((item, idx) => (
+                  <button
+                    key={idx}
+                    className="chip chip-trending"
+                    onClick={() => setQuery(item.keyword)}
+                  >
+                     {item.keyword} ({item.count})
+                  </button>
                 ))}
               </div>
             )}
           </div>
         )}
 
-        {loading && (
-          <div className="status-box">
-            <div className="spinner"></div>
-            <p>Searching movies...</p>
-          </div>
+       
+        {showFavorites && (
+          <FavoritesPage
+            favorites={favorites}
+            onRemove={handleToggleFavorite}
+          />
         )}
 
+   
         {error && !loading && (
           <div className="error-box">⚠️ {error}</div>
         )}
 
-        {/* {!loading && movies.length > 0 && (
-          <p className="results-count">
-            Found {totalResults} results for "<strong>{debouncedQuery}</strong>"
-          </p>
-        )} */}
+        {loading && (
+          <div className="cards-grid">
+            {Array(8).fill(null).map((_, i) => (
+              <SkeletonCard key={i} />
+            ))}
+          </div>
+        )}
 
+     
         {!loading && (
           <div className="cards-grid">
             {movies.map((movie) => (
@@ -191,13 +247,23 @@ function App() {
                 key={movie.imdbID}
                 movie={movie}
                 isAdded={isFavorite(movie.imdbID)}
-                onToggleWatchlist={() => handleToggleFavorite(movie)}
+                onToggleWatchlist={handleToggleFavorite}
                 onViewDetails={handleViewDetails}
               />
             ))}
           </div>
         )}
 
+   
+        {!loading && !error && movies.length === 0 && debouncedQuery && (
+          <div className="empty-state">
+            <p className="empty-icon"></p>
+            <p className="empty-title">No movies found</p>
+            <p className="empty-sub">Try searching for a different title</p>
+          </div>
+        )}
+
+   
         {!loading && movies.length > 0 && (
           <Pagination
             currentPage={currentPage}
@@ -205,19 +271,14 @@ function App() {
             onPageChange={setCurrentPage}
           />
         )}
-
-        {!loading && !error && movies.length === 0 && debouncedQuery && (
-          <div className="status-box">
-            <p> No movies found. Try a different search!</p>
-          </div>
-        )}
       </main>
 
+     
       {selectedMovie && (
         <MovieModal
           movie={selectedMovie}
           isAdded={isFavorite(selectedMovie.imdbID)}
-          onToggleWatchlist={() => handleToggleFavorite(selectedMovie)}
+          onToggleWatchlist={handleToggleFavorite}
           onClose={() => setSelectedMovie(null)}
         />
       )}

@@ -1,11 +1,10 @@
 import React from "react";
+
 function StarRating({ rating }) {
-  
   const ratingOutOf5 = parseFloat(rating) / 2;
-  const totalStars = 5;
   const stars = [];
 
-  for (let i = 1; i <= totalStars; i++) {
+  for (let i = 1; i <= 5; i++) {
     if (i <= Math.floor(ratingOutOf5)) {
       stars.push(<span key={i} className="star full">★</span>);
     } else if (i === Math.ceil(ratingOutOf5) && ratingOutOf5 % 1 !== 0) {

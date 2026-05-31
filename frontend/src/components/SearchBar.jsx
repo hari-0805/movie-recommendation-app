@@ -11,7 +11,6 @@ function SearchBar({ query, onChange }) {
         value={query}
         onChange={(e) => onChange(e.target.value)}
       />
-      
       {query && (
         <button className="clear-btn" onClick={() => onChange("")}>✕</button>
       )}

@@ -1,0 +1,93 @@
+import axiosInstance from "./axiosInstance";
+
+export async function registerUser(username, email, password) {
+  const res = await axiosInstance.post("/auth/register", {
+    username,
+    email,
+    password,
+  });
+  return res.data;
+}
+
+export async function loginUser(email, password) {
+  const res = await axiosInstance.post("/auth/login", { email, password });
+  return res.data;
+}
+
+export async function searchMovies(query, page = 1) {
+  const res = await axiosInstance.get(
+    `/movies/search?title=${encodeURIComponent(query)}&page=${page}`
+  );
+  return {
+    movies:       res.data.results,
+    totalResults: res.data.total,
+  };
+}
+
+export async function getMovieDetails(imdbID) {
+  const res = await axiosInstance.get(`/movies/${imdbID}`);
+  return res.data;
+}
+
+export async function getFavorites() {
+  const res = await axiosInstance.get("/favorites");
+  return res.data;
+}
+
+export async function addFavorite(movie) {
+  const res = await axiosInstance.post("/favorites", {
+    imdb_id:     movie.imdbID,
+    title:       movie.Title,
+    year:        movie.Year        || "N/A",
+    poster:      movie.Poster !== "N/A" ? movie.Poster : "",
+    imdb_rating: movie.imdbRating  || "N/A",
+  });
+  return res.data;
+}
+
+export async function removeFavorite(id) {
+  await axiosInstance.delete(`/favorites/${id}`);
+}
+
+// ── SEARCH HISTORY ────────────────────────────
+export async function getRecentSearches() {
+  const res = await axiosInstance.get("/history");
+  return res.data;
+}
+
+export async function getTrendingSearches() {
+  const res = await axiosInstance.get("/history/trending");
+  return res.data;
+}
+
+// ── REVIEWS ───────────────────────────────────
+export async function getMovieReviews(imdbID) {
+  const res = await axiosInstance.get(`/reviews/${imdbID}`);
+  return res.data;
+}
+
+export async function getAverageRating(imdbID) {
+  const res = await axiosInstance.get(`/reviews/${imdbID}/average`);
+  return res.data;
+}
+
+export async function addReview(imdbID, rating, reviewText) {
+  const res = await axiosInstance.post("/reviews", {
+    imdb_id: imdbID,
+    rating,
+    review:  reviewText,
+  });
+  return res.data;
+}
+
+export async function updateReview(reviewID, rating, reviewText) {
+  const res = await axiosInstance.put(`/reviews/${reviewID}`, {
+    rating,
+    review:  reviewText,
+  });
+  return res.data;
+}
+
+export async function deleteReview(reviewID) {
+  await axiosInstance.delete(`/reviews/${reviewID}`);
+}

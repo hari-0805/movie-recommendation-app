@@ -1,4 +1,3 @@
-# app/services/auth.py
 from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -16,10 +15,8 @@ SECRET_KEY     = os.getenv("SECRET_KEY", "fallbacksecretkey123")
 ALGORITHM      = os.getenv("ALGORITHM", "HS256")
 EXPIRE_MINUTES = int(os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 30))
 
-# ✅ Fix bcrypt issue
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/auth/login")
-
 
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
