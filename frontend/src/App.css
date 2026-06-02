@@ -1,5 +1,3 @@
-/* Google Fonts already imported in index.html */
-
 :root {
   --transition-speed: 0.3s;
 }
@@ -68,7 +66,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   font-family: 'Outfit', sans-serif;
 }
 
-/* Scrollbars */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;
@@ -90,7 +87,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   flex-direction: column;
 }
 
-/* Glassmorphism class utility */
 .glass-panel {
   background: var(--surface);
   backdrop-filter: blur(18px);
@@ -100,7 +96,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.25);
 }
 
-/* Navbar */
 .navbar {
   position: sticky;
   top: 0;
@@ -192,7 +187,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   box-shadow: 0 0 10px rgba(231, 76, 60, 0.4);
 }
 
-/* Dropdown */
 .profile-wrap {
   position: relative;
 }
@@ -255,7 +249,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
 }
 
-/* Main Layout */
 .main {
   max-width: 1200px;
   margin: 0 auto;
@@ -271,7 +264,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   letter-spacing: 0.02em;
 }
 
-/* Search Wrapper */
 .search-wrapper {
   display: flex;
   align-items: center;
@@ -317,7 +309,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   color: var(--text);
 }
 
-/* Search History Chips */
 .history-container {
   display: flex;
   flex-direction: column;
@@ -369,7 +360,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   box-shadow: 0 0 10px rgba(245, 166, 35, 0.3);
 }
 
-/* Results Info */
 .results-count {
   font-size: 14px;
   color: var(--muted);
@@ -379,14 +369,12 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   color: var(--text);
 }
 
-/* Cards Grid */
 .cards-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 28px;
 }
 
-/* Movie Card */
 .card {
   background: var(--surface);
   backdrop-filter: blur(12px);
@@ -458,7 +446,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
-  height: 44px; /* Fix height for alignment */
+  height: 44px; 
 }
 .card-meta {
   font-size: 11px;
@@ -499,7 +487,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   color: #fff;
 }
 
-/* Star Ratings display */
+
 .star-row {
   display: flex;
   align-items: center;
@@ -518,7 +506,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   color: var(--muted);
 }
 
-/* Favorites Panel */
+
 .favorites-panel {
   background: var(--surface);
   backdrop-filter: blur(16px);
@@ -611,7 +599,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
 }
 
-/* Pagination */
 .pagination {
   display: flex;
   justify-content: center;
@@ -645,8 +632,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   color: var(--muted);
   font-weight: 600;
 }
-
-/* Movie Details Modal */
 .modal-backdrop {
   position: fixed;
   inset: 0;
@@ -766,8 +751,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   border-radius: 12px;
   border: 1px solid var(--surface-border);
 }
-
-/* Reviews Panel in Modal */
+ 
 .reviews-section {
   margin-top: 30px;
   border-top: 1px solid var(--surface-border);
@@ -937,7 +921,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   color: #e74c3c;
 }
 
-/* Authentication Screens */
 .auth-wrapper {
   min-height: 100vh;
   display: flex;
@@ -1058,7 +1041,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   border: 1px solid rgba(231, 76, 60, 0.2);
 }
 
-/* Toast Alerts */
 .toast {
   position: fixed;
   bottom: 24px;
