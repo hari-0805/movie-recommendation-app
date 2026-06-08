@@ -26,7 +26,7 @@ load_dotenv()
 API_KEY  = os.getenv("OMDB_API_KEY")
 BASE_URL = "https://www.omdbapi.com/"
 
-# ── Cache ─────────────────────────────────────────────────────────────────────
+# Cache 
 _cache: dict[int, tuple[float, list]] = {}
 CACHE_TTL = 300  # 5 minutes
 
@@ -62,20 +62,20 @@ def _genres(genre_str: str) -> list[str]:
     return [g.strip() for g in genre_str.split(",")]
 
 
-# Reliable OMDB search terms per genre (one term only — saves API calls)
+# Reliable OMDB search terms per genre one term only — saves API calls
 GENRE_TERMS = {
-    "Action":    "action thriller",
-    "Adventure": "epic adventure",
-    "Drama":     "drama film",
-    "Comedy":    "comedy film",
-    "Thriller":  "crime thriller",
-    "Horror":    "horror film",
-    "Sci-Fi":    "science fiction",
-    "Romance":   "romantic film",
-    "Animation": "animated film",
-    "Crime":     "crime drama",
-    "Fantasy":   "fantasy adventure",
-    "Mystery":   "mystery detective",
+    "Action":    "marvel action",
+    "Adventure": "adventure heroes",
+    "Drama":     "award drama",
+    "Comedy":    "popular comedy",
+    "Thriller":  "suspense thriller",
+    "Horror":    "scary horror",
+    "Sci-Fi":    "space sci-fi",
+    "Romance":   "romantic love",
+    "Animation": "pixar animation",
+    "Crime":     "crime mystery",
+    "Fantasy":   "magic fantasy",
+    "Mystery":   "detective mystery",
 }
 
 
@@ -86,13 +86,13 @@ async def get_recommendations(
     force_refresh: bool = False,
 ) -> list[dict]:
 
-    # ── Serve from cache if fresh ─────────────────────────────────────────────
+    #  Serve from cache if fresh 
     if not force_refresh:
         cached = _cache_get(user_id)
         if cached is not None:
             return cached[:limit]
 
-    # ── Load user activity ────────────────────────────────────────────────────
+    #  Load user activity 
     favorites = db.query(Favorite).filter(Favorite.user_id == user_id).limit(10).all()
     viewed    = (db.query(ViewedMovie)
                    .filter(ViewedMovie.user_id == user_id)
@@ -109,7 +109,7 @@ async def get_recommendations(
     # Already-seen ids — never recommend these
     seen: set[str] = {f.imdb_id for f in favorites} | {v.imdb_id for v in viewed}
 
-    # ── Build genre scores ────────────────────────────────────────────────────
+    #  Build genre scores 
     scores: dict[str, float] = defaultdict(float)
 
     # Favorites: fetch genres in parallel (capped at 10)
@@ -162,13 +162,13 @@ async def get_recommendations(
     if not scores:
         return []
 
-    # ── Save preferences ──────────────────────────────────────────────────────
+    # Save preferences
     db.query(UserPreference).filter(UserPreference.user_id == user_id).delete()
     for genre, score in scores.items():
         db.add(UserPreference(user_id=user_id, genre=genre, score=score))
     db.commit()
 
-    # ── Fetch candidates for top 4 genres — 1 search each ────────────────────
+    #  Fetch candidates for top 4 genres — 1 search each 
     top_genres = sorted(scores, key=lambda g: scores[g], reverse=True)[:4]
 
     search_results = await asyncio.gather(
@@ -176,7 +176,7 @@ async def get_recommendations(
           for g in top_genres]
     )
 
-    # ── Collect unique candidates ─────────────────────────────────────────────
+    # Collect unique candidates
     candidate_ids: list[tuple[str, str]] = []
     seen_candidates: set[str] = set()
 
@@ -192,11 +192,11 @@ async def get_recommendations(
     if not candidate_ids:
         return []
 
-    # ── Fetch full details — parallel, capped at 20 ───────────────────────────
+    # Fetch full details — parallel, capped at 20
     candidate_ids = candidate_ids[:20]
     details = await asyncio.gather(*[_omdb({"i": iid}) for iid, _ in candidate_ids])
 
-    # ── Score, deduplicate, build output ─────────────────────────────────────
+    # Score, deduplicate, build output 
     seen_titles: set[str] = set()
     recommendations: list[dict] = []
 
@@ -227,6 +227,10 @@ async def get_recommendations(
         poster = detail.get("Poster", "")
         if poster == "N/A":
             poster = ""
+
+        # Skip short films and non-movies only allow no-poster
+        if "Short" in movie_genres or detail.get("Type", "movie") != "movie":
+            continue
 
         recommendations.append({
             "imdb_id": iid,

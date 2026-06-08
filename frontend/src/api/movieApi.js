@@ -49,7 +49,7 @@ export async function removeFavorite(id) {
   await axiosInstance.delete(`/favorites/${id}`);
 }
 
-// ── SEARCH HISTORY ────────────────────────────
+//SEARCH HISTORY
 export async function getRecentSearches() {
   const res = await axiosInstance.get("/history");
   return res.data;
@@ -60,7 +60,7 @@ export async function getTrendingSearches() {
   return res.data;
 }
 
-// ── REVIEWS ───────────────────────────────────
+//REVIEWS
 export async function getMovieReviews(imdbID) {
   const res = await axiosInstance.get(`/reviews/${imdbID}`);
   return res.data;
@@ -92,7 +92,7 @@ export async function deleteReview(reviewID) {
   await axiosInstance.delete(`/reviews/${reviewID}`);
 }
 
-// ── RECOMMENDATIONS ───────────────────────────────────────────────────────────
+//RECOMMENDATIONS
 export async function getRecommendations(limit = 10, forceRefresh = false) {
   const res = await axiosInstance.get(
     `/recommendations?limit=${limit}&refresh=${forceRefresh}`

@@ -16,7 +16,7 @@ function RecommendationSection({
     setRefreshing(false);
   }
 
-  // ── Empty state ────────────────────────────────────────────────────────────
+  // Empty state 
   if (!loading && recommendations.length === 0) {
     return (
       <section className="rec-section">
@@ -62,7 +62,7 @@ function RecommendationSection({
             >
               <div className="rec-poster-wrap">
                 <img
-                  src={movie.poster || "https://placehold.co/160x240?text=No+Poster"}
+                  src={movie.poster || `https://placehold.co/160x240/1a1a2e/ffffff?text=${encodeURIComponent(movie.title.slice(0,10))}`}
                   alt={movie.title}
                   className="rec-poster"
                 />

@@ -29,7 +29,6 @@ async def search(
     if results is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=total)
 
-    # --- Prevent duplicate consecutive searches ---
     last = (
         db.query(SearchHistory)
         .filter(SearchHistory.user_id == current_user.id)

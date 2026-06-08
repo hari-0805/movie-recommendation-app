@@ -49,7 +49,7 @@ function App() {
     setToast({ message, type });
   }
 
-  // ── Load recommendations ───────────────────────────────────────────────────
+  //Load recommendations
   const loadRecommendations = useCallback(async (forceRefresh = false) => {
     if (!loggedIn) return;
     setRecLoading(true);
@@ -63,7 +63,7 @@ function App() {
     }
   }, [loggedIn]);
 
-  // ── Load search history ────────────────────────────────────────────────────
+  //Load search history
   async function loadSearchHistory() {
     if (!loggedIn) return;
     try {
@@ -72,11 +72,10 @@ function App() {
       setRecentSearches(recent.data ?? recent);
       setTrendingSearches(trending);
     } catch {
-      /* silent */
     }
   }
 
-  // ── On login / logout ──────────────────────────────────────────────────────
+  // On login / logout
   useEffect(() => {
     if (loggedIn) {
       loadSearchHistory();
@@ -90,7 +89,7 @@ function App() {
     }
   }, [loggedIn]);
 
-  // ── Search ─────────────────────────────────────────────────────────────────
+  //  Search
   useEffect(() => {
     if (!loggedIn || !debouncedQuery.trim()) {
       setMovies([]);
@@ -126,13 +125,13 @@ function App() {
 
   useEffect(() => { setCurrentPage(1); }, [debouncedQuery]);
 
-  // ── Theme ──────────────────────────────────────────────────────────────────
+  //   Theme
   useEffect(() => {
     document.body.classList.toggle("dark",  isDark);
     document.body.classList.toggle("light", !isDark);
   }, [isDark]);
 
-  // ── View details (records viewed + refreshes recs) ─────────────────────────
+  // View details (records viewed + refreshes recs) 
   async function handleViewDetails(imdbID) {
     setSelectedMovie({});
     try {
@@ -162,7 +161,7 @@ function App() {
     return favorites.find((f) => f.imdb_id === imdbID)?.id;
   }
 
-  // ── Toggle favorite (refreshes recs) ──────────────────────────────────────
+  // Toggle favorite (refreshes recs) 
   async function handleToggleFavorite(movie) {
     if (!movie?.imdbID) return;
     try {
@@ -182,7 +181,7 @@ function App() {
     }
   }
 
-  // ── Not logged in ──────────────────────────────────────────────────────────
+  // Not logged in
   if (!loggedIn) {
     return (
       <div className={`app-root ${isDark ? "dark" : "light"}`}>
@@ -221,7 +220,7 @@ function App() {
             )}
             {trendingSearches.length > 0 && (
               <div className="history-row" style={{ marginTop: "4px" }}>
-                <span className="history-label">Trending 🔥:</span>
+                <span className="history-label">Trending🔥 :</span>
                 {trendingSearches.slice(0, 5).map((item, i) => (
                   <button key={i} className="chip chip-trending" onClick={() => setQuery(item.keyword)}>
                     {item.keyword} ({item.count})
@@ -232,7 +231,7 @@ function App() {
           </div>
         )}
 
-        {/* ── Recommendations ─────────────────────────────────────────────── */}
+        {/*Recommendations */}
         <RecommendationSection
           recommendations={recommendations}
           loading={recLoading}
@@ -270,7 +269,6 @@ function App() {
 
         {!loading && !error && movies.length === 0 && debouncedQuery && (
           <div className="empty-state">
-            <p className="empty-icon">🎬</p>
             <p className="empty-title">No movies found</p>
             <p className="empty-sub">Try searching for a different title</p>
           </div>
