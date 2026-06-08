@@ -135,3 +135,28 @@ Debounced search query input (500ms delay) to prevent hitting OMDb rate limits.
 Dark Mode / Light Mode styling switch.
 Visual feedback including skeleton loaders during fetching, custom rating stars, and toast alerts for operations.
 A full details popup (modal) displaying ratings, overview, and cast info.
+
+8/6/26
+How the recommendation logic works
+
+User Activity
+    ├── Favorites   → weight 3  (strongest signal)
+    ├── Viewed      → weight 2
+    └── Searches    → weight 1
+            ↓
+    Fetch OMDB details for each activity item
+            ↓
+    Build genre score map
+    e.g. { Action: 9, Drama: 4, Sci-Fi: 3 }
+            ↓
+    Save to user_preferences table
+            ↓
+    Pick top 3 genres
+            ↓
+    Search OMDB for each genre
+            ↓
+    Skip movies already in favorites/viewed
+            ↓
+    Score each result by matching genre weights
+            ↓
+    Sort by score → return top 10

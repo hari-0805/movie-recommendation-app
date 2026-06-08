@@ -91,3 +91,16 @@ export async function updateReview(reviewID, rating, reviewText) {
 export async function deleteReview(reviewID) {
   await axiosInstance.delete(`/reviews/${reviewID}`);
 }
+
+// ── RECOMMENDATIONS ───────────────────────────────────────────────────────────
+export async function getRecommendations(limit = 10, forceRefresh = false) {
+  const res = await axiosInstance.get(
+    `/recommendations?limit=${limit}&refresh=${forceRefresh}`
+  );
+  return res.data.recommended_movies;
+}
+
+export async function markMovieViewed(imdb_id, title, genre = "", year = "", poster = "") {
+  const params = new URLSearchParams({ title, genre, year, poster });
+  await axiosInstance.post(`/recommendations/viewed/${imdb_id}?${params}`);
+}
