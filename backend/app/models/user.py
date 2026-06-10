@@ -16,3 +16,4 @@ class User(Base):
     reviews        = relationship("Review",         back_populates="user", cascade="all, delete-orphan")
     viewed_movies  = relationship("ViewedMovie",    back_populates="user", cascade="all, delete-orphan")
     preferences    = relationship("UserPreference", back_populates="user", cascade="all, delete-orphan")
+    watchlist      = relationship("Watchlist",       back_populates="user", cascade="all, delete-orphan")

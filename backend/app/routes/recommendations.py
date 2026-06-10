@@ -5,8 +5,14 @@ from app.models.user import User
 from app.models.viewed_movie import ViewedMovie
 from app.schemas.recommendation import RecommendationResponse, RecommendedMovie
 from app.services.auth import get_current_user
-from app.services.recommendation import get_recommendations, invalidate_cache
+from app.services.recommendation import (
+    get_recommendations,
+    get_trending_recommendations,
+    get_genre_analytics,
+    invalidate_cache,
+)
 from datetime import datetime, timezone
+from typing import List
 
 router = APIRouter(prefix="/recommendations", tags=["Recommendations"], redirect_slashes=False)
 
@@ -18,10 +24,33 @@ async def recommendations(
     db:      Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Personalised recommendations based on favorites, viewed, search history."""
     movies = await get_recommendations(current_user.id, db, limit=limit, force_refresh=refresh)
     return RecommendationResponse(
         recommended_movies=[RecommendedMovie(**m) for m in movies]
     )
+
+
+@router.get("/trending", response_model=RecommendationResponse)
+async def trending_recommendations(
+    limit: int     = Query(10, ge=1, le=20),
+    db:    Session = Depends(get_db),
+    current_user:  User = Depends(get_current_user),
+):
+    """Trending movies based on what all users are searching."""
+    movies = await get_trending_recommendations(db, limit=limit)
+    return RecommendationResponse(
+        recommended_movies=[RecommendedMovie(**m) for m in movies]
+    )
+
+
+@router.get("/genres")
+def genre_analytics(
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
+):
+    """User's genre preference breakdown with scores and percentages."""
+    return {"genres": get_genre_analytics(current_user.id, db)}
 
 
 @router.post("/viewed/{imdb_id}", status_code=201)
@@ -34,6 +63,7 @@ async def mark_viewed(
     db:      Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
+    """Record that the user opened a movie's detail page."""
     existing = (
         db.query(ViewedMovie)
         .filter(ViewedMovie.user_id == current_user.id, ViewedMovie.imdb_id == imdb_id)
@@ -52,7 +82,5 @@ async def mark_viewed(
             poster=poster,
         ))
     db.commit()
-
-    # Invalidate cache so next load picks up the new viewed movie
     invalidate_cache(current_user.id)
     return {"success": True, "message": "Viewed recorded"}

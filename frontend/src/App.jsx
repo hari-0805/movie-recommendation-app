@@ -10,6 +10,7 @@ import Toast                  from "./components/Toast";
 import RecommendationSection  from "./components/RecommendationSection";
 import LoginPage              from "./pages/LoginPage";
 import FavoritesPage          from "./pages/FavoritesPage";
+import WatchlistPage          from "./pages/WatchlistPage";
 import useDebounce            from "./hooks/useDebounce";
 import {
   searchMovies,
@@ -21,6 +22,11 @@ import {
   getTrendingSearches,
   getRecommendations,
   markMovieViewed,
+  getTrendingRecommendations,
+  getGenreAnalytics,
+  getWatchlist,
+  addToWatchlist,
+  removeFromWatchlist,
 } from "./api/movieApi";
 import "./App.css";
 
@@ -36,11 +42,15 @@ function App() {
   const [selectedMovie,    setSelectedMovie]    = useState(null);
   const [favorites,        setFavorites]        = useState([]);
   const [showFavorites,    setShowFavorites]    = useState(false);
+  const [watchlist,        setWatchlist]        = useState([]);
+  const [showWatchlist,    setShowWatchlist]    = useState(false);
   const [isDark,           setIsDark]           = useState(false);
   const [toast,            setToast]            = useState(null);
   const [recentSearches,   setRecentSearches]   = useState([]);
   const [trendingSearches, setTrendingSearches] = useState([]);
   const [recommendations,  setRecommendations]  = useState([]);
+  const [trending,         setTrending]         = useState([]);
+  const [genres,           setGenres]           = useState([]);
   const [recLoading,       setRecLoading]       = useState(false);
 
   const debouncedQuery = useDebounce(query, 500);
@@ -54,16 +64,25 @@ function App() {
     if (!loggedIn) return;
     setRecLoading(true);
     try {
-      const data = await getRecommendations(10, forceRefresh);
-      setRecommendations(data);
+      const [recs, trend, genreData] = await Promise.all([
+        getRecommendations(10, forceRefresh),
+        getTrendingRecommendations(10),
+        getGenreAnalytics(),
+      ]);
+      setRecommendations(recs);
+      setTrending(trend);
+      setGenres(genreData);
     } catch {
+      setWatchlist([]);
       setRecommendations([]);
+      setTrending([]);
+      setGenres([]);
     } finally {
       setRecLoading(false);
     }
   }, [loggedIn]);
 
-  //Load search history
+  // Load search history 
   async function loadSearchHistory() {
     if (!loggedIn) return;
     try {
@@ -72,24 +91,27 @@ function App() {
       setRecentSearches(recent.data ?? recent);
       setTrendingSearches(trending);
     } catch {
+      /* silent */
     }
   }
 
-  // On login / logout
+  // On login / logout 
   useEffect(() => {
     if (loggedIn) {
       loadSearchHistory();
       loadRecommendations();
       getFavorites().then(setFavorites).catch(() => setFavorites([]));
+      getWatchlist().then(setWatchlist).catch(() => setWatchlist([]));
     } else {
       setRecentSearches([]);
       setTrendingSearches([]);
       setFavorites([]);
+      setWatchlist([]);
       setRecommendations([]);
     }
   }, [loggedIn]);
 
-  //  Search
+  // Search
   useEffect(() => {
     if (!loggedIn || !debouncedQuery.trim()) {
       setMovies([]);
@@ -125,13 +147,13 @@ function App() {
 
   useEffect(() => { setCurrentPage(1); }, [debouncedQuery]);
 
-  //   Theme
+  //  Theme 
   useEffect(() => {
     document.body.classList.toggle("dark",  isDark);
     document.body.classList.toggle("light", !isDark);
   }, [isDark]);
 
-  // View details (records viewed + refreshes recs) 
+  // View details (records viewed + refreshes recs)
   async function handleViewDetails(imdbID) {
     setSelectedMovie({});
     try {
@@ -155,6 +177,31 @@ function App() {
 
   function isFavorite(imdbID) {
     return favorites.some((f) => f.imdb_id === imdbID);
+  }
+
+  function isInWatchlist(imdbID) {
+    return watchlist.some((w) => w.movie_id === imdbID);
+  }
+
+  function getWatchlistId(imdbID) {
+    return watchlist.find((w) => w.movie_id === imdbID)?.id;
+  }
+
+  async function handleToggleWatchlist(movie) {
+    if (!movie?.imdbID) return;
+    try {
+      if (isInWatchlist(movie.imdbID)) {
+        await removeFromWatchlist(getWatchlistId(movie.imdbID));
+        setWatchlist((prev) => prev.filter((w) => w.movie_id !== movie.imdbID));
+        showToast(`${movie.Title} removed from watchlist`, "error");
+      } else {
+        const newItem = await addToWatchlist(movie);
+        setWatchlist((prev) => [...prev, newItem]);
+        showToast(`${movie.Title} added to watchlist!`, "success");
+      }
+    } catch (err) {
+      showToast(err.response?.data?.detail?.message || err.message, "error");
+    }
   }
 
   function getFavoriteId(imdbID) {
@@ -181,7 +228,7 @@ function App() {
     }
   }
 
-  // Not logged in
+  // Not logged in 
   if (!loggedIn) {
     return (
       <div className={`app-root ${isDark ? "dark" : "light"}`}>
@@ -199,7 +246,9 @@ function App() {
         isDark={isDark}
         onToggleTheme={() => setIsDark(!isDark)}
         watchlistCount={favorites.length}
-        onShowFavorites={() => setShowFavorites(!showFavorites)}
+        onShowFavorites={() => { setShowFavorites(!showFavorites); setShowWatchlist(false); }}
+        watchlistItemCount={watchlist.length}
+        onShowWatchlist={() => { setShowWatchlist(!showWatchlist); setShowFavorites(false); }}
       />
 
       <main className="main">
@@ -220,7 +269,7 @@ function App() {
             )}
             {trendingSearches.length > 0 && (
               <div className="history-row" style={{ marginTop: "4px" }}>
-                <span className="history-label">Trending🔥 :</span>
+                <span className="history-label">Trending 🔥:</span>
                 {trendingSearches.slice(0, 5).map((item, i) => (
                   <button key={i} className="chip chip-trending" onClick={() => setQuery(item.keyword)}>
                     {item.keyword} ({item.count})
@@ -231,9 +280,11 @@ function App() {
           </div>
         )}
 
-        {/*Recommendations */}
+        {/* Recommendations */}
         <RecommendationSection
           recommendations={recommendations}
+          trending={trending}
+          genres={genres}
           loading={recLoading}
           onViewDetails={handleViewDetails}
           onToggleFavorite={handleToggleFavorite}
@@ -244,6 +295,19 @@ function App() {
         {/* Favorites overlay */}
         {showFavorites && (
           <FavoritesPage favorites={favorites} onRemove={handleToggleFavorite} />
+        )}
+
+        {/* Watchlist overlay */}
+        {showWatchlist && (
+          <WatchlistPage
+            watchlist={watchlist}
+            onRemove={async (id) => {
+              await removeFromWatchlist(id);
+              setWatchlist((prev) => prev.filter((w) => w.id !== id));
+              showToast("Removed from watchlist", "error");
+            }}
+            onViewDetails={handleViewDetails}
+          />
         )}
 
         {error && !loading && <div className="error-box">⚠️ {error}</div>}
@@ -262,6 +326,8 @@ function App() {
                 isAdded={isFavorite(movie.imdbID)}
                 onToggleWatchlist={handleToggleFavorite}
                 onViewDetails={handleViewDetails}
+                isWatchlisted={isInWatchlist(movie.imdbID)}
+                onToggleWatchlistItem={handleToggleWatchlist}
               />
             ))}
           </div>
@@ -289,6 +355,8 @@ function App() {
           isAdded={isFavorite(selectedMovie.imdbID)}
           onToggleWatchlist={handleToggleFavorite}
           onClose={() => setSelectedMovie(null)}
+          isWatchlisted={isInWatchlist(selectedMovie.imdbID)}
+          onToggleWatchlistItem={handleToggleWatchlist}
         />
       )}
     </div>

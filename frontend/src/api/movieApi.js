@@ -49,7 +49,7 @@ export async function removeFavorite(id) {
   await axiosInstance.delete(`/favorites/${id}`);
 }
 
-//SEARCH HISTORY
+// ── SEARCH HISTORY ────────────────────────────
 export async function getRecentSearches() {
   const res = await axiosInstance.get("/history");
   return res.data;
@@ -60,7 +60,7 @@ export async function getTrendingSearches() {
   return res.data;
 }
 
-//REVIEWS
+// ── REVIEWS ───────────────────────────────────
 export async function getMovieReviews(imdbID) {
   const res = await axiosInstance.get(`/reviews/${imdbID}`);
   return res.data;
@@ -92,7 +92,7 @@ export async function deleteReview(reviewID) {
   await axiosInstance.delete(`/reviews/${reviewID}`);
 }
 
-//RECOMMENDATIONS
+// ── RECOMMENDATIONS ───────────────────────────────────────────────────────────
 export async function getRecommendations(limit = 10, forceRefresh = false) {
   const res = await axiosInstance.get(
     `/recommendations?limit=${limit}&refresh=${forceRefresh}`
@@ -103,4 +103,35 @@ export async function getRecommendations(limit = 10, forceRefresh = false) {
 export async function markMovieViewed(imdb_id, title, genre = "", year = "", poster = "") {
   const params = new URLSearchParams({ title, genre, year, poster });
   await axiosInstance.post(`/recommendations/viewed/${imdb_id}?${params}`);
+}
+
+export async function getTrendingRecommendations(limit = 10) {
+  const res = await axiosInstance.get(`/recommendations/trending?limit=${limit}`);
+  return res.data.recommended_movies;
+}
+
+export async function getGenreAnalytics() {
+  const res = await axiosInstance.get("/recommendations/genres");
+  return res.data.genres;
+}
+
+// ── WATCHLIST ─────────────────────────────────────────────────────────────────
+export async function getWatchlist() {
+  const res = await axiosInstance.get("/watchlist");
+  return res.data.data;
+}
+
+export async function addToWatchlist(movie) {
+  const res = await axiosInstance.post("/watchlist", {
+    movie_id: movie.imdbID,
+    title:    movie.Title,
+    year:     movie.Year    || "",
+    poster:   movie.Poster !== "N/A" ? (movie.Poster || "") : "",
+    genre:    movie.Genre   || "",
+  });
+  return res.data.data;
+}
+
+export async function removeFromWatchlist(id) {
+  await axiosInstance.delete(`/watchlist/${id}`);
 }

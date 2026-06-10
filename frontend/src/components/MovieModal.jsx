@@ -9,7 +9,7 @@ import {
   deleteReview,
 } from "../api/movieApi";
 
-function MovieModal({ movie, isAdded, onToggleWatchlist, onClose }) {
+function MovieModal({ movie, isAdded, onToggleWatchlist, onClose, isWatchlisted, onToggleWatchlistItem }) {
   const { user } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [avgRatingInfo, setAvgRatingInfo] = useState({ average_rating: 0, total_reviews: 0 });
@@ -130,13 +130,20 @@ function MovieModal({ movie, isAdded, onToggleWatchlist, onClose }) {
               <StarRating rating={movie.imdbRating} />
             )}
             <p className="modal-plot">{movie.Plot}</p>
-            <button
-              className={`watchlist-btn ${isAdded ? "added" : ""}`}
-              onClick={() => onToggleWatchlist(movie)}
-              style={{ marginBottom: "20px" }}
-            >
-              {isAdded ? " Remove from Watchlist" : "Add to Watchlist"}
-            </button>
+            <div className="modal-action-row">
+              <button
+                className={`watchlist-btn ${isAdded ? "added" : ""}`}
+                onClick={() => onToggleWatchlist(movie)}
+              >
+                {isAdded ? "❤️ Remove Favorite" : "🤍 Add to Favorites"}
+              </button>
+              <button
+                className={`watchlist-btn secondary ${isWatchlisted ? "added" : ""}`}
+                onClick={() => onToggleWatchlistItem && onToggleWatchlistItem(movie)}
+              >
+                {isWatchlisted ? "✅ In Watchlist" : "🔖 Watch Later"}
+              </button>
+            </div>
 
         
             <div className="reviews-section">

@@ -1387,3 +1387,140 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   padding: 4px 10px;
   font-size: 0.72rem;
 }
+
+/* ── Recommendation Tabs ─────────────────────────────────────────────────── */
+.rec-tabs {
+  display: flex;
+  gap: 8px;
+}
+.rec-tab {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  color: var(--muted);
+  border-radius: 20px;
+  padding: 6px 16px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.rec-tab.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.rec-tab:hover:not(.active) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* ── Genre Analytics Chart ───────────────────────────────────────────────── */
+.genre-chart {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-bottom: 16px;
+}
+.genre-chart-title {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 14px;
+}
+.genre-bars {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.genre-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.genre-name {
+  font-size: 0.78rem;
+  color: var(--text);
+  width: 80px;
+  flex-shrink: 0;
+  font-weight: 500;
+}
+.genre-bar-track {
+  flex: 1;
+  height: 8px;
+  background: var(--surface-border);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.genre-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.6s ease;
+  min-width: 4px;
+}
+.genre-pct {
+  font-size: 0.72rem;
+  color: var(--muted);
+  width: 36px;
+  text-align: right;
+  flex-shrink: 0;
+}
+
+/* ── Watchlist ────────────────────────────────────────────────────────────── */
+.watchlist-panel {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+}
+
+.fav-genre {
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+/* Watchlist nav button variant */
+.nav-watchlist-btn {
+  background: transparent;
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+/* Two action buttons on card */
+.card-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+/* Secondary watchlist button variant */
+.watchlist-btn.secondary {
+  background: transparent;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.watchlist-btn.secondary:hover {
+  background: var(--accent);
+  color: #fff;
+}
+.watchlist-btn.secondary.added {
+  background: var(--accent);
+  color: #fff;
+  opacity: 0.8;
+}
+
+/* Modal action row */
+.modal-action-row {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+.modal-action-row .watchlist-btn {
+  flex: 1;
+  min-width: 140px;
+}

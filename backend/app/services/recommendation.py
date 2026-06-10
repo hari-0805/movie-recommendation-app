@@ -1,12 +1,12 @@
 """
-Recommendation Service — rate-limit safe version
-Minimises OMDB calls to stay within free tier (1000/day, ~1/sec).
+Recommendation Service — v4 (mentor feedback improvements)
 
-Call budget per recommendation run:
-  - Favorites genre fetch : up to 10 calls (batched)
-  - Genre candidate search: 4 genres × 1 page = 4 calls
-  - Candidate details     : up to 20 calls (batched)
-  Total: ~34 calls max, cached for 5 minutes
+Changes from v3:
+  1. Dynamic genre detection from search history (no hardcoded keyword map)
+  2. Cache invalidated on favorites AND search history changes
+  3. Frequency-weighted scoring — more searches/favorites = higher score
+  4. Trending recommendations based on all users' activity
+  5. Genre analytics per user
 """
 
 import httpx
@@ -14,19 +14,20 @@ import os
 import asyncio
 import time
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from app.models.favorite import Favorite
 from app.models.search_history import SearchHistory
 from app.models.viewed_movie import ViewedMovie
 from app.models.user_preference import UserPreference
 from dotenv import load_dotenv
-from collections import defaultdict
+from collections import defaultdict, Counter
 
 load_dotenv()
 
 API_KEY  = os.getenv("OMDB_API_KEY")
 BASE_URL = "https://www.omdbapi.com/"
 
-# Cache 
+# ── Cache ─────────────────────────────────────────────────────────────────────
 _cache: dict[int, tuple[float, list]] = {}
 CACHE_TTL = 300  # 5 minutes
 
@@ -62,21 +63,35 @@ def _genres(genre_str: str) -> list[str]:
     return [g.strip() for g in genre_str.split(",")]
 
 
-# Reliable OMDB search terms per genre one term only — saves API calls
-GENRE_TERMS = {
-    "Action":    "marvel action",
-    "Adventure": "adventure heroes",
-    "Drama":     "award drama",
-    "Comedy":    "popular comedy",
-    "Thriller":  "suspense thriller",
-    "Horror":    "scary horror",
-    "Sci-Fi":    "space sci-fi",
-    "Romance":   "romantic love",
-    "Animation": "pixar animation",
-    "Crime":     "crime mystery",
-    "Fantasy":   "magic fantasy",
-    "Mystery":   "detective mystery",
-}
+# ── Improvement 1: Dynamic genre detection from search keywords ───────────────
+async def _genres_from_keyword(keyword: str) -> list[str]:
+    """
+    Search OMDB with the keyword, take the top result,
+    fetch its full detail and extract genres dynamically.
+    No hardcoded mappings — fully data-driven.
+    """
+    search = await _omdb({"s": keyword, "type": "movie"})
+    if search.get("Response") != "True":
+        return []
+    hits = search.get("Search", [])
+    if not hits:
+        return []
+    # Take the first (most relevant) result
+    detail = await _omdb({"i": hits[0]["imdbID"]})
+    return _genres(detail.get("Genre", ""))
+
+
+# ── Improvement 3: Frequency-weighted scoring ─────────────────────────────────
+def _frequency_score(items, key_fn, base_weight: float) -> dict[str, float]:
+    """
+    Count how many times each key appears and multiply by base_weight.
+    e.g. if user has 3 Action favorites → Action gets 3 × 3 = 9 instead of just 3
+    """
+    freq: Counter = Counter(key_fn(item) for item in items)
+    scores: dict[str, float] = defaultdict(float)
+    for key, count in freq.items():
+        scores[key] += count * base_weight
+    return scores
 
 
 async def get_recommendations(
@@ -86,97 +101,87 @@ async def get_recommendations(
     force_refresh: bool = False,
 ) -> list[dict]:
 
-    #  Serve from cache if fresh 
     if not force_refresh:
         cached = _cache_get(user_id)
         if cached is not None:
             return cached[:limit]
 
-    #  Load user activity 
-    favorites = db.query(Favorite).filter(Favorite.user_id == user_id).limit(10).all()
+    # ── Load user activity ────────────────────────────────────────────────────
+    favorites = db.query(Favorite).filter(Favorite.user_id == user_id).limit(20).all()
     viewed    = (db.query(ViewedMovie)
                    .filter(ViewedMovie.user_id == user_id)
                    .order_by(ViewedMovie.viewed_at.desc())
-                   .limit(10).all())
+                   .limit(15).all())
     searches  = (db.query(SearchHistory)
                    .filter(SearchHistory.user_id == user_id)
                    .order_by(SearchHistory.searched_at.desc())
-                   .limit(5).all())
+                   .limit(10).all())
 
     if not favorites and not viewed and not searches:
         return []
 
-    # Already-seen ids — never recommend these
     seen: set[str] = {f.imdb_id for f in favorites} | {v.imdb_id for v in viewed}
 
-    #  Build genre scores 
+    # ── Improvement 1 + 3: Dynamic genre detection + frequency weighting ──────
     scores: dict[str, float] = defaultdict(float)
 
-    # Favorites: fetch genres in parallel (capped at 10)
+    # Favorites — fetch genres in parallel, weight by frequency
     fav_details = await asyncio.gather(
         *[_omdb({"i": f.imdb_id}) for f in favorites]
     ) if favorites else []
 
     fav_genre_map: dict[str, list[str]] = {}
+    genre_fav_count: Counter = Counter()
+
     for f, detail in zip(favorites, fav_details):
         genres = _genres(detail.get("Genre", ""))
         fav_genre_map[f.imdb_id] = genres
         for g in genres:
-            scores[g] += 3
+            genre_fav_count[g] += 1
 
-    # Viewed: genre already stored in DB — zero API calls
+    # Frequency-weighted: more favorites in a genre = higher score
+    for genre, count in genre_fav_count.items():
+        scores[genre] += count * 3  # base weight 3 × frequency
+
+    # Viewed — genre in DB, frequency weighted
+    genre_viewed_count: Counter = Counter()
     for v in viewed:
         for g in _genres(v.genre or ""):
-            scores[g] += 2
+            genre_viewed_count[g] += 1
+    for genre, count in genre_viewed_count.items():
+        scores[genre] += count * 2  # base weight 2 × frequency
 
-    # Searches: use keyword directly as genre hint — zero API calls
-    # This avoids fetching OMDB for each search keyword
-    SEARCH_GENRE_HINTS = {
-        "batman": ["Action", "Adventure"],
-        "superman": ["Action", "Adventure"],
-        "avengers": ["Action", "Adventure", "Sci-Fi"],
-        "spider": ["Action", "Adventure"],
-        "thor": ["Action", "Adventure", "Fantasy"],
-        "iron man": ["Action", "Sci-Fi"],
-        "horror": ["Horror"],
-        "comedy": ["Comedy"],
-        "thriller": ["Thriller"],
-        "romance": ["Romance"],
-        "sci-fi": ["Sci-Fi"],
-        "animation": ["Animation"],
-    }
+    # ── Improvement 1: Dynamic search genre detection ─────────────────────────
+    # Deduplicate keywords to avoid redundant OMDB calls
+    unique_keywords = list({s.keyword.lower() for s in searches})[:5]
 
-    for s in searches:
-        kw = s.keyword.lower()
-        matched = False
-        for hint_kw, genres in SEARCH_GENRE_HINTS.items():
-            if hint_kw in kw:
-                for g in genres:
-                    scores[g] += 1
-                matched = True
-                break
-        if not matched:
-            # Generic boost — use keyword as-is
-            scores[s.keyword.title()] += 1
+    keyword_genre_results = await asyncio.gather(
+        *[_genres_from_keyword(kw) for kw in unique_keywords]
+    ) if unique_keywords else []
+
+    # Weight by how many times keyword was searched (frequency)
+    keyword_freq = Counter(s.keyword.lower() for s in searches)
+    for kw, genres in zip(unique_keywords, keyword_genre_results):
+        freq = keyword_freq.get(kw, 1)
+        for g in genres:
+            scores[g] += freq * 1  # base weight 1 × frequency
 
     if not scores:
         return []
 
-    # Save preferences
+    # ── Save preferences (genre analytics) ───────────────────────────────────
     db.query(UserPreference).filter(UserPreference.user_id == user_id).delete()
     for genre, score in scores.items():
         db.add(UserPreference(user_id=user_id, genre=genre, score=score))
     db.commit()
 
-    #  Fetch candidates for top 4 genres — 1 search each 
+    # ── Top 4 genres → fetch candidates ──────────────────────────────────────
     top_genres = sorted(scores, key=lambda g: scores[g], reverse=True)[:4]
 
     search_results = await asyncio.gather(
-        *[_omdb({"s": GENRE_TERMS.get(g, g), "type": "movie", "page": "1"})
-          for g in top_genres]
+        *[_omdb({"s": g, "type": "movie", "page": "1"}) for g in top_genres]
     )
 
-    # Collect unique candidates
     candidate_ids: list[tuple[str, str]] = []
     seen_candidates: set[str] = set()
 
@@ -192,11 +197,10 @@ async def get_recommendations(
     if not candidate_ids:
         return []
 
-    # Fetch full details — parallel, capped at 20
     candidate_ids = candidate_ids[:20]
     details = await asyncio.gather(*[_omdb({"i": iid}) for iid, _ in candidate_ids])
 
-    # Score, deduplicate, build output 
+    # ── Score, filter, build output ───────────────────────────────────────────
     seen_titles: set[str] = set()
     recommendations: list[dict] = []
 
@@ -209,13 +213,18 @@ async def get_recommendations(
             continue
         seen_titles.add(title.lower())
 
+        # Skip short films and non-movies
+        if detail.get("Type", "movie") != "movie":
+            continue
         movie_genres = _genres(detail.get("Genre", ""))
-        rec_score    = sum(scores.get(g, 0) for g in movie_genres)
+        if "Short" in movie_genres:
+            continue
 
-        fav_contrib    = sum(3 for glist in fav_genre_map.values()
-                               for g in glist if g in movie_genres)
-        viewed_contrib = sum(2 for v in viewed
-                               for g in _genres(v.genre or "") if g in movie_genres)
+        # Improvement 3: score uses frequency-weighted genre scores
+        rec_score = sum(scores.get(g, 0) for g in movie_genres)
+
+        fav_contrib    = sum(genre_fav_count.get(g, 0) * 3    for g in movie_genres)
+        viewed_contrib = sum(genre_viewed_count.get(g, 0) * 2 for g in movie_genres)
 
         if fav_contrib >= viewed_contrib and fav_contrib > 0:
             reason = "Based on your favorites"
@@ -227,10 +236,6 @@ async def get_recommendations(
         poster = detail.get("Poster", "")
         if poster == "N/A":
             poster = ""
-
-        # Skip short films and non-movies only allow no-poster
-        if "Short" in movie_genres or detail.get("Type", "movie") != "movie":
-            continue
 
         recommendations.append({
             "imdb_id": iid,
@@ -246,3 +251,83 @@ async def get_recommendations(
     result = recommendations[:limit]
     _cache_set(user_id, result)
     return result
+
+
+# ── Improvement 4: Trending recommendations ───────────────────────────────────
+async def get_trending_recommendations(db: Session, limit: int = 10) -> list[dict]:
+    """
+    Find the most searched keywords across ALL users,
+    fetch top movie for each trending keyword.
+    """
+    trending = (
+        db.query(SearchHistory.keyword, func.count(SearchHistory.keyword).label("cnt"))
+        .group_by(SearchHistory.keyword)
+        .order_by(func.count(SearchHistory.keyword).desc())
+        .limit(5)
+        .all()
+    )
+    if not trending:
+        return []
+
+    results = await asyncio.gather(
+        *[_omdb({"s": t.keyword, "type": "movie"}) for t in trending]
+    )
+
+    seen: set[str] = set()
+    movies: list[dict] = []
+
+    for trend, result in zip(trending, results):
+        if result.get("Response") != "True":
+            continue
+        for item in result.get("Search", [])[:2]:
+            iid = item.get("imdbID", "")
+            if not iid or iid in seen:
+                continue
+            seen.add(iid)
+            detail = await _omdb({"i": iid})
+            if detail.get("Response") != "True":
+                continue
+            if detail.get("Type", "movie") != "movie":
+                continue
+            poster = detail.get("Poster", "")
+            if poster == "N/A":
+                poster = ""
+            movies.append({
+                "imdb_id": iid,
+                "title":   detail.get("Title", ""),
+                "genre":   detail.get("Genre", "N/A"),
+                "year":    detail.get("Year", "N/A"),
+                "poster":  poster,
+                "reason":  f"Trending: {trend.keyword} ({trend.cnt} searches)",
+                "score":   float(trend.cnt),
+            })
+            if len(movies) >= limit:
+                break
+
+    return movies
+
+
+# ── Improvement 4: Genre analytics ────────────────────────────────────────────
+def get_genre_analytics(user_id: int, db: Session) -> list[dict]:
+    """
+    Return user's genre preference breakdown with percentages.
+    Uses the stored user_preferences table.
+    """
+    prefs = (
+        db.query(UserPreference)
+        .filter(UserPreference.user_id == user_id)
+        .order_by(UserPreference.score.desc())
+        .all()
+    )
+    if not prefs:
+        return []
+
+    total = sum(p.score for p in prefs)
+    return [
+        {
+            "genre":      p.genre,
+            "score":      round(p.score, 2),
+            "percentage": round((p.score / total) * 100, 1),
+        }
+        for p in prefs[:10]
+    ]

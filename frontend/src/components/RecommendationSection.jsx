@@ -1,13 +1,17 @@
-import React, { useState, useCallback } from "react";
+import React, { useState } from "react";
+import GenreChart from "./GenreChart";
 
 function RecommendationSection({
   recommendations,
+  trending,
+  genres,
   loading,
   onViewDetails,
   onToggleFavorite,
   isFavorite,
   onRefresh,
 }) {
+  const [activeTab, setActiveTab] = useState("foryou"); // "foryou" | "trending"
   const [refreshing, setRefreshing] = useState(false);
 
   async function handleRefresh() {
@@ -16,27 +20,26 @@ function RecommendationSection({
     setRefreshing(false);
   }
 
-  // Empty state 
-  if (!loading && recommendations.length === 0) {
-    return (
-      <section className="rec-section">
-        <div className="rec-header">
-          <h2 className="rec-title">✨ Recommended For You</h2>
-        </div>
-        <div className="rec-empty">
-          <span className="rec-empty-icon">🎬</span>
-          <p className="rec-empty-text">
-            Start searching and adding favorites to get personalized recommendations.
-          </p>
-        </div>
-      </section>
-    );
-  }
+  const activeList = activeTab === "foryou" ? recommendations : trending;
 
   return (
     <section className="rec-section">
+      {/* Header */}
       <div className="rec-header">
-        <h2 className="rec-title">✨ Recommended For You</h2>
+        <div className="rec-tabs">
+          <button
+            className={`rec-tab ${activeTab === "foryou" ? "active" : ""}`}
+            onClick={() => setActiveTab("foryou")}
+          >
+            ✨ For You
+          </button>
+          <button
+            className={`rec-tab ${activeTab === "trending" ? "active" : ""}`}
+            onClick={() => setActiveTab("trending")}
+          >
+            🔥 Trending
+          </button>
+        </div>
         <button
           className={`rec-refresh-btn ${refreshing ? "spinning" : ""}`}
           onClick={handleRefresh}
@@ -46,15 +49,31 @@ function RecommendationSection({
         </button>
       </div>
 
+      {/* Genre analytics chart */}
+      {activeTab === "foryou" && genres && genres.length > 0 && (
+        <GenreChart genres={genres} />
+      )}
+
+      {/* Empty state */}
+      {!loading && activeList.length === 0 && (
+        <div className="rec-empty">
+          <span className="rec-empty-icon">🎬</span>
+          <p className="rec-empty-text">
+            {activeTab === "foryou"
+              ? "Start searching and adding favorites to get personalized recommendations."
+              : "No trending movies yet. Start searching!"}
+          </p>
+        </div>
+      )}
+
+      {/* Movie carousel */}
       {loading ? (
         <div className="rec-carousel">
-          {Array(5).fill(null).map((_, i) => (
-            <div key={i} className="rec-skeleton" />
-          ))}
+          {Array(5).fill(null).map((_, i) => <div key={i} className="rec-skeleton" />)}
         </div>
-      ) : (
+      ) : activeList.length > 0 ? (
         <div className="rec-carousel">
-          {recommendations.map((movie) => (
+          {activeList.map((movie) => (
             <div
               key={movie.imdb_id}
               className="rec-card"
@@ -62,7 +81,12 @@ function RecommendationSection({
             >
               <div className="rec-poster-wrap">
                 <img
-                  src={movie.poster || `https://placehold.co/160x240/1a1a2e/ffffff?text=${encodeURIComponent(movie.title.slice(0,10))}`}
+                  src={
+                    movie.poster ||
+                    `https://placehold.co/160x240/1a1a2e/ffffff?text=${encodeURIComponent(
+                      movie.title.slice(0, 10)
+                    )}`
+                  }
                   alt={movie.title}
                   className="rec-poster"
                 />
@@ -92,7 +116,7 @@ function RecommendationSection({
             </div>
           ))}
         </div>
-      )}
+      ) : null}
     </section>
   );
 }

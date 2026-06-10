@@ -6,9 +6,11 @@ from fastapi.responses import JSONResponse
 from app.database.db import engine
 from app.models import user, favorite, review, search_history
 from app.models.viewed_movie    import ViewedMovie
+from app.models.watchlist        import Watchlist
 from app.models.user_preference import UserPreference
 from app.routes import auth, movies, favorites, history, reviews
 from app.routes.dashboard       import router as dashboard_router
+from app.routes.watchlist        import router as watchlist_router
 from app.routes.recommendations import router as recommendations_router
 
 # ── Create all tables ─────────────────────────────────────────────────────────
@@ -53,6 +55,7 @@ app.include_router(favorites.router)
 app.include_router(history.router)
 app.include_router(reviews.router)
 app.include_router(dashboard_router)
+app.include_router(watchlist_router)
 app.include_router(recommendations_router)
 
 # ── Health ────────────────────────────────────────────────────────────────────

@@ -160,3 +160,25 @@ User Activity
     Score each result by matching genre weights
             ↓
     Sort by score → return top 10
+
+    10/06/2026
+
+     Brief Explanation of Implementation
+The Watchlist feature allows authenticated users to save movies they want to watch later. It is
+implemented as a separate feature from Favorites — Favorites represent movies the user already
+loves, while Watchlist represents a 'watch later' queue.
+Architecture
+The implementation follows the same layered architecture used throughout the project:
+• Model layer: Watchlist SQLAlchemy model with proper FK constraints and cascade deletes
+• Schema layer: Pydantic schemas for request validation and structured response envelopes
+• Route layer: FastAPI router with ownership checks and duplicate prevention
+• Frontend: WatchlistPage, updated MovieCard, MovieModal, and Navbar components
+• API layer: Three new functions in movieApi.js for get, add, and remove
+Key Design Decisions
+• Watchlist and Favorites are separate tables — different intents, different UI surfaces
+• Duplicate prevention at DB query level before insert — returns 400 with clear message
+• Ownership enforced — DELETE filters by both id AND user_id, so users can only remove
+their own items
+• created_at uses timezone-aware UTC timestamps for consistency across servers
+• Cascade delete on user_id FK — deleting a user automatically cleans all watchlist entries
+
