@@ -29,7 +29,7 @@ async def search(
     if results is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=total)
 
-    # Prevent duplicate consecutive searches
+   
     last = (
         db.query(SearchHistory)
         .filter(SearchHistory.user_id == current_user.id)
@@ -41,7 +41,7 @@ async def search(
     if is_new_keyword:
         db.add(SearchHistory(user_id=current_user.id, keyword=cleaned.lower()))
         db.commit()
-        # Improvement 2: invalidate cache when search history changes
+   
         invalidate_cache(current_user.id)
 
     return {"results": results, "total": total, "page": page}

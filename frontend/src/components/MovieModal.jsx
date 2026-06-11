@@ -141,7 +141,7 @@ function MovieModal({ movie, isAdded, onToggleWatchlist, onClose, isWatchlisted,
                 className={`watchlist-btn secondary ${isWatchlisted ? "added" : ""}`}
                 onClick={() => onToggleWatchlistItem && onToggleWatchlistItem(movie)}
               >
-                {isWatchlisted ? "✅ In Watchlist" : "🔖 Watch Later"}
+                {isWatchlisted ? " In Watchlist" : " Watch Later"}
               </button>
             </div>
 

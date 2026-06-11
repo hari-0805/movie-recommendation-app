@@ -18,14 +18,14 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites, watchl
         </button>
 
         <button className="nav-fav-btn nav-watchlist-btn" onClick={onShowWatchlist}>
-          🔖 Watchlist
+           Watchlist
           {watchlistItemCount > 0 && (
             <span className="nav-badge">{watchlistItemCount}</span>
           )}
         </button>
 
         <button className="theme-toggle" onClick={onToggleTheme}>
-          {isDark ? "☀️ Light" : "🌙 Dark"}
+          {isDark ? " Light" : " Dark"}
         </button>
 
         <div className="profile-wrap">
@@ -47,7 +47,7 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites, watchl
                 className="dropdown-logout"
                 onClick={() => { logout(); setShowDropdown(false); }}
               >
-                🚪 Logout
+                 Logout
               </button>
             </div>
           )}

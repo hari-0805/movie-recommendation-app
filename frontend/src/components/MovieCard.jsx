@@ -28,7 +28,7 @@ function MovieCard({ movie, isAdded, onToggleWatchlist, onViewDetails, isWatchli
             onClick={(e) => { e.stopPropagation(); onToggleWatchlistItem(movie); }}
             title={isWatchlisted ? "Remove from watchlist" : "Watch later"}
           >
-            {isWatchlisted ? "✅ Watchlist" : "🔖 Watch Later"}
+            {isWatchlisted ? " Watchlist" : " Watch Later"}
           </button>
         </div>
       </div>

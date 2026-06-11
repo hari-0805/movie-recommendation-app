@@ -57,7 +57,7 @@ function RecommendationSection({
       {/* Empty state */}
       {!loading && activeList.length === 0 && (
         <div className="rec-empty">
-          <span className="rec-empty-icon">🎬</span>
+          <span className="rec-empty-icon"></span>
           <p className="rec-empty-text">
             {activeTab === "foryou"
               ? "Start searching and adding favorites to get personalized recommendations."
@@ -110,7 +110,7 @@ function RecommendationSection({
                     });
                   }}
                 >
-                  {isFavorite(movie.imdb_id) ? "✅" : "🔖"}
+                  {isFavorite(movie.imdb_id) ? "" : ""}
                 </button>
               </div>
             </div>

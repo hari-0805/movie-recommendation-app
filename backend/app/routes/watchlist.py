@@ -15,7 +15,7 @@ def add_to_watchlist(
     db:   Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ):
-    # Prevent duplicates
+   
     existing = db.query(Watchlist).filter(
         Watchlist.user_id  == current_user.id,
         Watchlist.movie_id == data.movie_id,

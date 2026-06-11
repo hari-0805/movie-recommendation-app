@@ -59,7 +59,6 @@ function App() {
     setToast({ message, type });
   }
 
-  //Load recommendations
   const loadRecommendations = useCallback(async (forceRefresh = false) => {
     if (!loggedIn) return;
     setRecLoading(true);
@@ -82,7 +81,7 @@ function App() {
     }
   }, [loggedIn]);
 
-  // Load search history 
+
   async function loadSearchHistory() {
     if (!loggedIn) return;
     try {
@@ -91,11 +90,10 @@ function App() {
       setRecentSearches(recent.data ?? recent);
       setTrendingSearches(trending);
     } catch {
-      /* silent */
+      
     }
   }
 
-  // On login / logout 
   useEffect(() => {
     if (loggedIn) {
       loadSearchHistory();
@@ -111,7 +109,6 @@ function App() {
     }
   }, [loggedIn]);
 
-  // Search
   useEffect(() => {
     if (!loggedIn || !debouncedQuery.trim()) {
       setMovies([]);
@@ -128,10 +125,10 @@ function App() {
         setMovies(data.movies);
         setTotalResults(data.totalResults);
         loadSearchHistory();
-        // Refresh recommendations after each search (dynamic update)
+        
         loadRecommendations();
       } catch (err) {
-        // 404 means no results found — show empty state, not an error
+       
         if (err.response?.status === 404) {
           setMovies([]);
           setTotalResults(0);
@@ -147,19 +144,19 @@ function App() {
 
   useEffect(() => { setCurrentPage(1); }, [debouncedQuery]);
 
-  //  Theme 
+
   useEffect(() => {
     document.body.classList.toggle("dark",  isDark);
     document.body.classList.toggle("light", !isDark);
   }, [isDark]);
 
-  // View details (records viewed + refreshes recs)
+  
   async function handleViewDetails(imdbID) {
     setSelectedMovie({});
     try {
       const data = await getMovieDetails(imdbID);
       setSelectedMovie(data);
-      // Record this as viewed
+    
       await markMovieViewed(
         imdbID,
         data.Title   || "",
@@ -167,7 +164,7 @@ function App() {
         data.Year    || "",
         data.Poster !== "N/A" ? data.Poster : "",
       );
-      // Refresh recommendations after viewing
+      
       loadRecommendations();
     } catch (err) {
       setError(err.message);
@@ -208,7 +205,6 @@ function App() {
     return favorites.find((f) => f.imdb_id === imdbID)?.id;
   }
 
-  // Toggle favorite (refreshes recs) 
   async function handleToggleFavorite(movie) {
     if (!movie?.imdbID) return;
     try {
@@ -221,14 +217,13 @@ function App() {
         setFavorites((prev) => [...prev, newFav]);
         showToast(`${movie.Title} added to favorites!`, "success");
       }
-      // Refresh recommendations after favorite change
+     
       loadRecommendations();
     } catch (err) {
       showToast(err.response?.data?.detail || err.message, "error");
     }
   }
 
-  // Not logged in 
   if (!loggedIn) {
     return (
       <div className={`app-root ${isDark ? "dark" : "light"}`}>
@@ -254,7 +249,6 @@ function App() {
       <main className="main">
         <SearchBar query={query} onChange={setQuery} />
 
-        {/* Recent & trending chips */}
         {(recentSearches.length > 0 || trendingSearches.length > 0) && (
           <div className="history-container">
             {recentSearches.length > 0 && (
@@ -280,7 +274,6 @@ function App() {
           </div>
         )}
 
-        {/* Recommendations */}
         <RecommendationSection
           recommendations={recommendations}
           trending={trending}
@@ -292,12 +285,11 @@ function App() {
           onRefresh={() => loadRecommendations(true)}
         />
 
-        {/* Favorites overlay */}
         {showFavorites && (
           <FavoritesPage favorites={favorites} onRemove={handleToggleFavorite} />
         )}
 
-        {/* Watchlist overlay */}
+    
         {showWatchlist && (
           <WatchlistPage
             watchlist={watchlist}
@@ -312,7 +304,7 @@ function App() {
 
         {error && !loading && <div className="error-box">⚠️ {error}</div>}
 
-        {/* Search results */}
+      
         {loading ? (
           <div className="cards-grid">
             {Array(8).fill(null).map((_, i) => <SkeletonCard key={i} />)}

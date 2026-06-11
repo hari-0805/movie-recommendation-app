@@ -3,11 +3,11 @@ import React from "react";
 function WatchlistPage({ watchlist, onRemove, onViewDetails }) {
   return (
     <div className="watchlist-panel">
-      <h3 className="fav-heading">🎬 My Watchlist ({watchlist.length})</h3>
+      <h3 className="fav-heading"> My Watchlist ({watchlist.length})</h3>
 
       {watchlist.length === 0 ? (
         <div className="empty-state">
-          <p className="empty-icon">📋</p>
+          <p className="empty-icon"></p>
           <p className="empty-title">Your watchlist is empty</p>
           <p className="empty-sub">
             Start adding movies to watch later.
