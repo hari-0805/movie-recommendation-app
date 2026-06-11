@@ -34,10 +34,9 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
 
     return new_user
 
-@router.post("/login", response_model=TokenResponse)
+@router.post("/login")
 def login(user_data: UserLogin, db: Session = Depends(get_db)):
 
-  
     user = db.query(User).filter(User.email == user_data.email).first()
 
     if not user or not verify_password(user_data.password, user.password):
@@ -48,4 +47,8 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
 
     token = create_access_token({"sub": user.email})
 
-    return {"access_token": token, "token_type": "bearer"}
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": {"id": user.id, "username": user.username, "email": user.email}
+    }

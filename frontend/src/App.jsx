@@ -11,6 +11,7 @@ import RecommendationSection  from "./components/RecommendationSection";
 import LoginPage              from "./pages/LoginPage";
 import FavoritesPage          from "./pages/FavoritesPage";
 import WatchlistPage          from "./pages/WatchlistPage";
+import ProfilePage            from "./pages/ProfilePage";
 import useDebounce            from "./hooks/useDebounce";
 import {
   searchMovies,
@@ -44,6 +45,7 @@ function App() {
   const [showFavorites,    setShowFavorites]    = useState(false);
   const [watchlist,        setWatchlist]        = useState([]);
   const [showWatchlist,    setShowWatchlist]    = useState(false);
+  const [showProfile,      setShowProfile]      = useState(false);
   const [isDark,           setIsDark]           = useState(false);
   const [toast,            setToast]            = useState(null);
   const [recentSearches,   setRecentSearches]   = useState([]);
@@ -59,6 +61,7 @@ function App() {
     setToast({ message, type });
   }
 
+ 
   const loadRecommendations = useCallback(async (forceRefresh = false) => {
     if (!loggedIn) return;
     setRecLoading(true);
@@ -109,6 +112,7 @@ function App() {
     }
   }, [loggedIn]);
 
+
   useEffect(() => {
     if (!loggedIn || !debouncedQuery.trim()) {
       setMovies([]);
@@ -125,10 +129,10 @@ function App() {
         setMovies(data.movies);
         setTotalResults(data.totalResults);
         loadSearchHistory();
-        
+      
         loadRecommendations();
       } catch (err) {
-       
+        
         if (err.response?.status === 404) {
           setMovies([]);
           setTotalResults(0);
@@ -150,13 +154,13 @@ function App() {
     document.body.classList.toggle("light", !isDark);
   }, [isDark]);
 
-  
+
   async function handleViewDetails(imdbID) {
     setSelectedMovie({});
     try {
       const data = await getMovieDetails(imdbID);
       setSelectedMovie(data);
-    
+      
       await markMovieViewed(
         imdbID,
         data.Title   || "",
@@ -205,6 +209,7 @@ function App() {
     return favorites.find((f) => f.imdb_id === imdbID)?.id;
   }
 
+ 
   async function handleToggleFavorite(movie) {
     if (!movie?.imdbID) return;
     try {
@@ -217,7 +222,7 @@ function App() {
         setFavorites((prev) => [...prev, newFav]);
         showToast(`${movie.Title} added to favorites!`, "success");
       }
-     
+    
       loadRecommendations();
     } catch (err) {
       showToast(err.response?.data?.detail || err.message, "error");
@@ -241,14 +246,16 @@ function App() {
         isDark={isDark}
         onToggleTheme={() => setIsDark(!isDark)}
         watchlistCount={favorites.length}
-        onShowFavorites={() => { setShowFavorites(!showFavorites); setShowWatchlist(false); }}
+        onShowFavorites={() => { setShowFavorites(!showFavorites); setShowWatchlist(false); setShowProfile(false); }}
         watchlistItemCount={watchlist.length}
-        onShowWatchlist={() => { setShowWatchlist(!showWatchlist); setShowFavorites(false); }}
+        onShowWatchlist={() => { setShowWatchlist(!showWatchlist); setShowFavorites(false); setShowProfile(false); }}
+        onShowProfile={() => { setShowProfile(!showProfile); setShowFavorites(false); setShowWatchlist(false); }}
       />
 
       <main className="main">
         <SearchBar query={query} onChange={setQuery} />
 
+       
         {(recentSearches.length > 0 || trendingSearches.length > 0) && (
           <div className="history-container">
             {recentSearches.length > 0 && (
@@ -274,6 +281,7 @@ function App() {
           </div>
         )}
 
+      
         <RecommendationSection
           recommendations={recommendations}
           trending={trending}
@@ -285,11 +293,20 @@ function App() {
           onRefresh={() => loadRecommendations(true)}
         />
 
+       
         {showFavorites && (
           <FavoritesPage favorites={favorites} onRemove={handleToggleFavorite} />
         )}
 
-    
+       
+        {showProfile && (
+          <ProfilePage
+            onClose={() => setShowProfile(false)}
+            onToast={showToast}
+          />
+        )}
+
+       
         {showWatchlist && (
           <WatchlistPage
             watchlist={watchlist}
@@ -304,7 +321,6 @@ function App() {
 
         {error && !loading && <div className="error-box">⚠️ {error}</div>}
 
-      
         {loading ? (
           <div className="cards-grid">
             {Array(8).fill(null).map((_, i) => <SkeletonCard key={i} />)}
@@ -327,6 +343,7 @@ function App() {
 
         {!loading && !error && movies.length === 0 && debouncedQuery && (
           <div className="empty-state">
+            <p className="empty-icon"></p>
             <p className="empty-title">No movies found</p>
             <p className="empty-sub">Try searching for a different title</p>
           </div>

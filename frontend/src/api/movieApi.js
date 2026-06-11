@@ -49,6 +49,7 @@ export async function removeFavorite(id) {
   await axiosInstance.delete(`/favorites/${id}`);
 }
 
+
 export async function getRecentSearches() {
   const res = await axiosInstance.get("/history");
   return res.data;
@@ -58,6 +59,7 @@ export async function getTrendingSearches() {
   const res = await axiosInstance.get("/history/trending");
   return res.data;
 }
+
 
 export async function getMovieReviews(imdbID) {
   const res = await axiosInstance.get(`/reviews/${imdbID}`);
@@ -111,6 +113,7 @@ export async function getGenreAnalytics() {
   const res = await axiosInstance.get("/recommendations/genres");
   return res.data.genres;
 }
+
 export async function getWatchlist() {
   const res = await axiosInstance.get("/watchlist");
   return res.data.data;
@@ -129,4 +132,24 @@ export async function addToWatchlist(movie) {
 
 export async function removeFromWatchlist(id) {
   await axiosInstance.delete(`/watchlist/${id}`);
+}
+
+
+export async function getProfile() {
+  const res = await axiosInstance.get("/profile");
+  return res.data;
+}
+
+export async function updateProfile(username, email) {
+  const res = await axiosInstance.put("/profile", { username, email });
+  return res.data;
+}
+
+export async function changePassword(currentPassword, newPassword, confirmPassword) {
+  const res = await axiosInstance.put("/profile/password", {
+    current_password: currentPassword,
+    new_password:     newPassword,
+    confirm_password: confirmPassword,
+  });
+  return res.data;
 }

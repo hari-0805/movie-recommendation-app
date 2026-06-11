@@ -11,10 +11,13 @@ from app.models.user_preference import UserPreference
 from app.routes import auth, movies, favorites, history, reviews
 from app.routes.dashboard       import router as dashboard_router
 from app.routes.watchlist        import router as watchlist_router
+from app.routes.profile          import router as profile_router
 from app.routes.recommendations import router as recommendations_router
+
 
 from app.database.db import Base
 Base.metadata.create_all(bind=engine)
+
 
 app = FastAPI(
     title="Movie Recommendation API",
@@ -43,7 +46,6 @@ async def not_found_handler(request: Request, exc):
         status_code=status.HTTP_404_NOT_FOUND,
         content={"success": False, "message": "Resource not found"},
     )
-
 app.include_router(auth.router)
 app.include_router(movies.router)
 app.include_router(favorites.router)
@@ -51,6 +53,7 @@ app.include_router(history.router)
 app.include_router(reviews.router)
 app.include_router(dashboard_router)
 app.include_router(watchlist_router)
+app.include_router(profile_router)
 app.include_router(recommendations_router)
 
 @app.get("/", tags=["Health"])
