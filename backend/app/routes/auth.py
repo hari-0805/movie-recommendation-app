@@ -50,5 +50,5 @@ def login(user_data: UserLogin, db: Session = Depends(get_db)):
     return {
         "access_token": token,
         "token_type": "bearer",
-        "user": {"id": user.id, "username": user.username, "email": user.email}
+        "user": {"id": user.id, "username": user.username, "email": user.email, "is_admin": user.is_admin}
     }

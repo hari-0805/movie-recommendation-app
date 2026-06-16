@@ -70,3 +70,15 @@ def get_user_or_404(user_id: int, db: Session) -> User:
             detail={"success": False, "message": "User not found"},
         )
     return user
+
+
+def get_admin_user(
+    current_user: User = Depends(get_current_user)
+) -> User:
+    """Dependency — only allows admin users through."""
+    if not current_user.is_admin:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail={"success": False, "message": "Admin access required"},
+        )
+    return current_user
