@@ -2086,3 +2086,83 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
 
 /* Admin menu item */
 .admin-menu-item { color: #6d28d9 !important; font-weight: 600 !important; }
+
+
+
+/* Pagination */
+.admin-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 16px;
+  padding: 8px 0;
+}
+.admin-page-btn {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  color: var(--text);
+  border-radius: 8px;
+  padding: 6px 14px;
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.admin-page-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+.admin-page-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.admin-page-info {
+  font-size: 0.82rem;
+  color: var(--muted);
+  min-width: 100px;
+  text-align: center;
+}
+
+/* Charts row */
+.admin-charts-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-bottom: 0;
+}
+@media (max-width: 600px) {
+  .admin-charts-row { grid-template-columns: 1fr; }
+}
+.admin-chart-box {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  padding: 16px 18px;
+}
+
+/* Top reviewers */
+.admin-reviewer-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 0.8rem;
+  color: var(--text);
+}
+.admin-reviewer-rank {
+  color: var(--accent);
+  font-weight: 700;
+}
+.admin-reviewer-count {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+/* Toast error variant */
+.admin-toast.error {
+  background: #dc2626;
+}

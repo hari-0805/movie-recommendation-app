@@ -44,6 +44,7 @@ function LoginPage({ onToast }) {
         id:       data.user?.id,
         username: data.user?.username || username || email.split("@")[0],
         email:    data.user?.email    || email,
+        is_admin: data.user?.is_admin,
       });
 
       onToast("Logged in successfully!", "success");

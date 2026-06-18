@@ -15,17 +15,18 @@ from app.routes.profile          import router as profile_router
 from app.routes.admin            import router as admin_router
 from app.routes.recommendations import router as recommendations_router
 
-
+# ── Create all tables ─────────────────────────────────────────────────────────
+from app.database.db import Base
 Base.metadata.create_all(bind=engine)
 
-
+# ── App ───────────────────────────────────────────────────────────────────────
 app = FastAPI(
     title="Movie Recommendation API",
     description="Auth · Movies · Favorites · Reviews · History · Dashboard · Recommendations",
     version="3.0.0",
 )
 
-
+# ── CORS ──────────────────────────────────────────────────────────────────────
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -34,7 +35,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
+# ── Global exception handlers ─────────────────────────────────────────────────
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
@@ -49,7 +50,7 @@ async def not_found_handler(request: Request, exc):
         content={"success": False, "message": "Resource not found"},
     )
 
-
+# ── Routers ───────────────────────────────────────────────────────────────────
 app.include_router(auth.router)
 app.include_router(movies.router)
 app.include_router(favorites.router)
@@ -61,6 +62,7 @@ app.include_router(profile_router)
 app.include_router(admin_router)
 app.include_router(recommendations_router)
 
+# ── Health ────────────────────────────────────────────────────────────────────
 @app.get("/", tags=["Health"])
 def root():
     return {"message": "Movie API v3.0 is running ✅"}

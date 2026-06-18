@@ -49,7 +49,7 @@ export async function removeFavorite(id) {
   await axiosInstance.delete(`/favorites/${id}`);
 }
 
-
+// ── SEARCH HISTORY ────────────────────────────
 export async function getRecentSearches() {
   const res = await axiosInstance.get("/history");
   return res.data;
@@ -60,7 +60,7 @@ export async function getTrendingSearches() {
   return res.data;
 }
 
-
+// ── REVIEWS ───────────────────────────────────
 export async function getMovieReviews(imdbID) {
   const res = await axiosInstance.get(`/reviews/${imdbID}`);
   return res.data;
@@ -92,6 +92,7 @@ export async function deleteReview(reviewID) {
   await axiosInstance.delete(`/reviews/${reviewID}`);
 }
 
+// ── RECOMMENDATIONS ───────────────────────────────────────────────────────────
 export async function getRecommendations(limit = 10, forceRefresh = false) {
   const res = await axiosInstance.get(
     `/recommendations?limit=${limit}&refresh=${forceRefresh}`
@@ -114,6 +115,7 @@ export async function getGenreAnalytics() {
   return res.data.genres;
 }
 
+// ── WATCHLIST ─────────────────────────────────────────────────────────────────
 export async function getWatchlist() {
   const res = await axiosInstance.get("/watchlist");
   return res.data.data;
@@ -134,7 +136,7 @@ export async function removeFromWatchlist(id) {
   await axiosInstance.delete(`/watchlist/${id}`);
 }
 
-
+// ── PROFILE 
 export async function getProfile() {
   const res = await axiosInstance.get("/profile");
   return res.data;
@@ -151,5 +153,41 @@ export async function changePassword(currentPassword, newPassword, confirmPasswo
     new_password:     newPassword,
     confirm_password: confirmPassword,
   });
+  return res.data;
+}
+
+// ── ADMIN ─────────────────────────────────────────────────────────────────────
+
+export async function getAdminStats() {
+  const res = await axiosInstance.get("/admin/stats");
+  return res.data;
+}
+
+export async function getAdminUsers(page = 1, limit = 10, search = "") {
+  const res = await axiosInstance.get(
+    `/admin/users?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`
+  );
+  return res.data;
+}
+
+export async function deleteAdminUser(userId) {
+  const res = await axiosInstance.delete(`/admin/users/${userId}`);
+  return res.data;
+}
+
+export async function toggleAdminRole(userId) {
+  const res = await axiosInstance.patch(`/admin/users/${userId}/toggle-admin`);
+  return res.data;
+}
+
+export async function getAdminReviews(page = 1, limit = 10, search = "") {
+  const res = await axiosInstance.get(
+    `/admin/reviews?page=${page}&limit=${limit}&search=${encodeURIComponent(search)}`
+  );
+  return res.data;
+}
+
+export async function deleteAdminReview(reviewId) {
+  const res = await axiosInstance.delete(`/admin/reviews/${reviewId}`);
   return res.data;
 }
