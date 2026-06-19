@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useAuth } from "../context/AuthContext";
 
 function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
-                  watchlistItemCount, onShowWatchlist, onShowProfile, onShowAdmin }) {
+                  watchlistItemCount, onShowWatchlist, onShowProfile, onShowAdmin, onShowCollections }) {
   const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -19,6 +19,10 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
         <button className="nav-fav-btn nav-watchlist-btn" onClick={onShowWatchlist}>
           Watchlist
           {watchlistItemCount > 0 && <span className="nav-badge">{watchlistItemCount}</span>}
+        </button>
+
+        <button className="nav-fav-btn nav-col-btn" onClick={onShowCollections}>
+          🗂️ Collections
         </button>
 
         <button className="theme-toggle" onClick={onToggleTheme}>

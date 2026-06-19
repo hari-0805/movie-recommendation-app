@@ -191,3 +191,40 @@ export async function deleteAdminReview(reviewId) {
   const res = await axiosInstance.delete(`/admin/reviews/${reviewId}`);
   return res.data;
 }
+// ── COLLECTIONS — paste at bottom of movieApi.js ─────────────────────────────
+
+export async function getCollections() {
+  const res = await axiosInstance.get("/collections");
+  return res.data.data;
+}
+
+export async function createCollection(name, description, emoji) {
+  const res = await axiosInstance.post("/collections", { name, description, emoji });
+  return res.data.data;
+}
+
+export async function updateCollection(id, name, description, emoji) {
+  const res = await axiosInstance.put(`/collections/${id}`, { name, description, emoji });
+  return res.data.data;
+}
+
+export async function deleteCollection(id) {
+  const res = await axiosInstance.delete(`/collections/${id}`);
+  return res.data;
+}
+
+export async function addMovieToCollection(collectionId, movie) {
+  const res = await axiosInstance.post(`/collections/${collectionId}/movies`, {
+    movie_id: movie.imdbID || movie.movie_id,
+    title:    movie.Title  || movie.title  || "",
+    year:     movie.Year   || movie.year   || "",
+    poster:   (movie.Poster !== "N/A" ? movie.Poster : "") || movie.poster || "",
+    genre:    movie.Genre  || movie.genre  || "",
+  });
+  return res.data.data;
+}
+
+export async function removeMovieFromCollection(collectionId, movieId) {
+  const res = await axiosInstance.delete(`/collections/${collectionId}/movies/${movieId}`);
+  return res.data.data;
+}

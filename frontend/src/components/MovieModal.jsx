@@ -9,7 +9,7 @@ import {
   deleteReview,
 } from "../api/movieApi";
 
-function MovieModal({ movie, isAdded, onToggleWatchlist, onClose, isWatchlisted, onToggleWatchlistItem }) {
+function MovieModal({ movie, isAdded, onToggleWatchlist, onClose, isWatchlisted, onToggleWatchlistItem, onAddToCollection }) {
   const { user } = useAuth();
   const [reviews, setReviews] = useState([]);
   const [avgRatingInfo, setAvgRatingInfo] = useState({ average_rating: 0, total_reviews: 0 });
@@ -143,6 +143,14 @@ function MovieModal({ movie, isAdded, onToggleWatchlist, onClose, isWatchlisted,
               >
                 {isWatchlisted ? " In Watchlist" : " Watch Later"}
               </button>
+              
+               <button
+                className="watchlist-btn secondary"
+                onClick={() => onAddToCollection && onAddToCollection(movie)}
+              >
+                🗂️ Add to Collection
+              </button>
+              
             </div>
 
         

@@ -7,11 +7,13 @@ from app.database.db import engine
 from app.models import user, favorite, review, search_history
 from app.models.viewed_movie    import ViewedMovie
 from app.models.watchlist        import Watchlist
+from app.models.collection       import Collection, CollectionMovie
 from app.models.user_preference import UserPreference
 from app.routes import auth, movies, favorites, history, reviews
 from app.routes.dashboard       import router as dashboard_router
 from app.routes.watchlist        import router as watchlist_router
 from app.routes.profile          import router as profile_router
+from app.routes.collections      import router as collections_router
 from app.routes.admin            import router as admin_router
 from app.routes.recommendations import router as recommendations_router
 
@@ -59,6 +61,7 @@ app.include_router(reviews.router)
 app.include_router(dashboard_router)
 app.include_router(watchlist_router)
 app.include_router(profile_router)
+app.include_router(collections_router)
 app.include_router(admin_router)
 app.include_router(recommendations_router)
 

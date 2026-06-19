@@ -14,6 +14,7 @@ import WatchlistPage          from "./pages/WatchlistPage";
 import ProfilePage            from "./pages/ProfilePage";
 import AdminPage              from "./pages/AdminPage";
 import useDebounce            from "./hooks/useDebounce";
+import CollectionsPage from "./pages/CollectionsPage";
 import {
   searchMovies,
   getMovieDetails,
@@ -48,6 +49,8 @@ function App() {
   const [showWatchlist,    setShowWatchlist]    = useState(false);
   const [showProfile,      setShowProfile]      = useState(false);
   const [showAdmin,        setShowAdmin]        = useState(false);
+  const [showCollections,  setShowCollections]  = useState(false);
+  const [collectionMovie,  setCollectionMovie]  = useState(null);
   const [isDark,           setIsDark]           = useState(false);
   const [toast,            setToast]            = useState(null);
   const [recentSearches,   setRecentSearches]   = useState([]);
@@ -252,6 +255,7 @@ function App() {
         onShowWatchlist={() => { setShowWatchlist(!showWatchlist); setShowFavorites(false); setShowProfile(false); }}
         onShowProfile={() => { setShowProfile(!showProfile); setShowFavorites(false); setShowWatchlist(false); setShowAdmin(false); }}
         onShowAdmin={() => { setShowAdmin(!showAdmin); setShowProfile(false); setShowFavorites(false); setShowWatchlist(false); }}
+        onShowCollections={() => setShowCollections(!showCollections)}
       />
 
       <main className="main">
@@ -303,6 +307,13 @@ function App() {
       
         {showAdmin && (
           <AdminPage onClose={() => setShowAdmin(false)} />
+        )}
+
+        {showCollections && (
+          <CollectionsPage
+            onClose={() => { setShowCollections(false); setCollectionMovie(null); }}
+            currentMovie={collectionMovie}
+          />
         )}
 
         {showProfile && (
@@ -373,6 +384,10 @@ function App() {
           onClose={() => setSelectedMovie(null)}
           isWatchlisted={isInWatchlist(selectedMovie.imdbID)}
           onToggleWatchlistItem={handleToggleWatchlist}
+           onAddToCollection={(movie) => {
+            setCollectionMovie(movie);
+            setShowCollections(true);
+          }}
         />
       )}
     </div>
