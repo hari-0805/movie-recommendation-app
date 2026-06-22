@@ -51,6 +51,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 #  Global exception handlers 
+import traceback
+
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request: Request, exc: RequestValidationError):
     return JSONResponse(
@@ -64,6 +66,19 @@ async def not_found_handler(request: Request, exc):
         status_code=status.HTTP_404_NOT_FOUND,
         content={"success": False, "message": "Resource not found"},
     )
+
+@app.exception_handler(Exception)
+async def generic_exception_handler(request: Request, exc: Exception):
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "success": False, 
+            "message": "Internal Server Error", 
+            "detail": str(exc),
+            "traceback": traceback.format_exc()
+        },
+    )
+
 
 #  Routers 
 app.include_router(auth.router)
