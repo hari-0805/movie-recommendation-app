@@ -10,7 +10,7 @@ function GenreChart({ genres }) {
 
   return (
     <div className="genre-chips-wrap">
-      <span className="genre-chips-label">🎭 Your Genre Taste</span>
+      <span className="genre-chips-label"> Your Genre Taste</span>
       <div className="genre-chips">
         {genres.slice(0, 8).map((g, i) => (
           <div
