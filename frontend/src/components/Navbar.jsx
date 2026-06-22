@@ -8,7 +8,7 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
 
   return (
     <nav className="navbar">
-      <h1 className="nav-title">🎬 MovieSearch</h1>
+      <h1 className="nav-title"> MovieSearch</h1>
 
       <div className="nav-right">
         <button className="nav-fav-btn" onClick={onShowFavorites}>
@@ -22,7 +22,7 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
         </button>
 
         <button className="nav-fav-btn nav-col-btn" onClick={onShowCollections}>
-          🗂️ Collections
+           Collections
         </button>
 
         <button className="theme-toggle" onClick={onToggleTheme}>

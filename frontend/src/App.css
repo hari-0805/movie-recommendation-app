@@ -1414,59 +1414,42 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   color: var(--accent);
 }
 
-/* ── Genre Analytics Chart ───────────────────────────────────────────────── */
-.genre-chart {
-  background: var(--surface);
-  border: 1px solid var(--surface-border);
-  border-radius: 14px;
-  padding: 16px 20px;
-  margin-bottom: 16px;
-}
-.genre-chart-title {
-  font-size: 0.95rem;
-  font-weight: 700;
-  color: var(--text);
-  margin-bottom: 14px;
-}
-.genre-bars {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.genre-row {
+/*Genre Analytics */
+
+.genre-chips-wrap {
   display: flex;
   align-items: center;
   gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
 }
-.genre-name {
+.genre-chips-label {
   font-size: 0.78rem;
-  color: var(--text);
-  width: 80px;
-  flex-shrink: 0;
-  font-weight: 500;
-}
-.genre-bar-track {
-  flex: 1;
-  height: 8px;
-  background: var(--surface-border);
-  border-radius: 4px;
-  overflow: hidden;
-}
-.genre-bar-fill {
-  height: 100%;
-  border-radius: 4px;
-  transition: width 0.6s ease;
-  min-width: 4px;
-}
-.genre-pct {
-  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--muted);
-  width: 36px;
-  text-align: right;
-  flex-shrink: 0;
+  white-space: nowrap;
+}
+.genre-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.genre-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  border-radius: 20px;
+  padding: 4px 12px;
+  font-size: 0.78rem;
+  font-weight: 600;
+}
+.genre-chip-name { }
+.genre-chip-pct {
+  opacity: 0.75;
+  font-size: 0.72rem;
 }
 
-/* ── Watchlist ────────────────────────────────────────────────────────────── */
+/* Watchlist */
 .watchlist-panel {
   background: var(--surface);
   border: 1px solid var(--surface-border);
@@ -1525,7 +1508,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   min-width: 140px;
 }
 
-/* ── Profile ─────────────────────────────────────────────────────────────── */
+/* Profile*/
 .profile-overlay {
   position: fixed;
   inset: 0;
@@ -1707,7 +1690,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   background: var(--surface);
 }
 
-/* ── Profile v2 ──────────────────────────────────────────────────────────── */
+/* Profile v2 */
 .profile-panel {
   background: var(--bg);
   border-radius: 24px;
@@ -1911,7 +1894,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   cursor: not-allowed;
 }
 
-/* ── Admin Panel ─────────────────────────────────────────────────────────── */
+/*  Admin Panel  */
 .admin-overlay {
   position: fixed; inset: 0;
   background: rgba(0,0,0,0.6);

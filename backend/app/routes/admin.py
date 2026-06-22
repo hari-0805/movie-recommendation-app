@@ -12,7 +12,7 @@ from app.services.auth import get_admin_user
 router = APIRouter(prefix="/admin", tags=["Admin"], redirect_slashes=False)
 
 
-# ── Stats ─────────────────────────────────────────────────────────────────────
+# Stats
 @router.get("/stats")
 def get_stats(
     db:         Session = Depends(get_db),
@@ -79,7 +79,7 @@ def get_stats(
     }
 
 
-# ── Users (paginated) ─────────────────────────────────────────────────────────
+#  Users (paginated)
 @router.get("/users")
 def get_users(
     page:       int = Query(1, ge=1),
@@ -154,7 +154,7 @@ def toggle_admin(
     return {"success": True, "is_admin": user.is_admin, "username": user.username}
 
 
-# ── Reviews (paginated) ───────────────────────────────────────────────────────
+#  Reviews (paginated) 
 @router.get("/reviews")
 def get_all_reviews(
     page:    int = Query(1, ge=1),

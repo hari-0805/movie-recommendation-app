@@ -48,7 +48,7 @@ function CollectionCard({ col, onOpen, onEdit, onDelete }) {
 
       <div className="col-card-actions" onClick={e => e.stopPropagation()}>
         <button className="col-action-btn" onClick={() => onEdit(col)} title="Edit">✏️</button>
-        <button className="col-action-btn danger" onClick={() => onDelete(col)} title="Delete">🗑️</button>
+        <button className="col-action-btn danger" onClick={() => onDelete(col)} title="Delete">❌</button>
       </div>
     </div>
   );
@@ -323,7 +323,7 @@ function CollectionsPage({ onClose, currentMovie }) {
                 {currentMovie && (
                   <div className="col-add-to">
                     <p className="col-add-to-label">
-                      💥 Add <strong>"{currentMovie.Title || currentMovie.title}"</strong> to:
+                       Add <strong>"{currentMovie.Title || currentMovie.title}"</strong> to:
                     </p>
                     <div className="col-add-to-list">
                       {collections.map(col => (
@@ -334,7 +334,7 @@ function CollectionsPage({ onClose, currentMovie }) {
                           disabled={movieInCollection(col)}
                         >
                           {col.emoji} {col.name}
-                          {movieInCollection(col) && " ✅"}
+                          {movieInCollection(col) && " "}
                         </button>
                       ))}
                     </div>

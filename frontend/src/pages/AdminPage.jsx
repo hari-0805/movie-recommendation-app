@@ -5,7 +5,7 @@ import {
   toggleAdminRole, getAdminReviews, deleteAdminReview,
 } from "../api/movieApi";
 
-// ── Mini components ───────────────────────────────────────────────────────────
+// Mini components
 function StatCard({ icon, label, value, color }) {
   return (
     <div className="admin-stat-card" style={{ borderTop: `4px solid ${color}` }}>
@@ -42,11 +42,11 @@ function MiniBar({ label, value, max, color }) {
   );
 }
 
-// ── Main AdminPage ────────────────────────────────────────────────────────────
+// Main AdminPage
 function AdminPage({ onClose }) {
   const { user } = useAuth();
 
-  // ── Role guard ──────────────────────────────────────────────────────────────
+  // Role guard 
   if (!user?.is_admin) {
     return (
       <div className="admin-overlay" onClick={onClose}>
@@ -86,7 +86,7 @@ function AdminPage({ onClose }) {
     setTimeout(() => setToast({ msg: "", type: "" }), 3000);
   }
 
-  // ── Load stats ──────────────────────────────────────────────────────────────
+  // Load stats 
   useEffect(() => {
     setStatsLoading(true);
     getAdminStats()
@@ -95,7 +95,7 @@ function AdminPage({ onClose }) {
       .finally(() => setStatsLoading(false));
   }, []);
 
-  // ── Load users ──────────────────────────────────────────────────────────────
+  // Load users 
   const loadUsers = useCallback(async (page, search) => {
     setUserLoading(true);
     try {
@@ -114,7 +114,7 @@ function AdminPage({ onClose }) {
     if (tab === "users") loadUsers(userPage, userSearch);
   }, [tab, userPage, userSearch]);
 
-  // ── Load reviews ────────────────────────────────────────────────────────────
+  //  Load reviews 
   const loadReviews = useCallback(async (page, search) => {
     setReviewLoading(true);
     try {
@@ -133,7 +133,7 @@ function AdminPage({ onClose }) {
     if (tab === "reviews") loadReviews(reviewPage, reviewSearch);
   }, [tab, reviewPage, reviewSearch]);
 
-  // ── Actions ─────────────────────────────────────────────────────────────────
+  //  Actions 
   async function handleDeleteUser(userId, username) {
     if (!window.confirm(`Delete "${username}" and all their data?`)) return;
     try {
@@ -168,7 +168,7 @@ function AdminPage({ onClose }) {
     }
   }
 
-  // ── Search debounce ─────────────────────────────────────────────────────────
+  // Search debounce 
   function handleUserSearch(val) {
     setUserSearch(val);
     setUserPage(1);
@@ -216,7 +216,7 @@ function AdminPage({ onClose }) {
 
         <div className="admin-body">
 
-          {/* ── Stats ─────────────────────────────────────────────────────── */}
+          {/* Stats  */}
           {tab === "stats" && (
             statsLoading ? <div className="admin-loading">⏳ Loading statistics...</div> :
             stats && (
@@ -295,7 +295,7 @@ function AdminPage({ onClose }) {
             )
           )}
 
-          {/* ── Users ─────────────────────────────────────────────────────── */}
+          {/* Users */}
           {tab === "users" && (
             <div>
               <div className="admin-search-wrap">
@@ -359,7 +359,7 @@ function AdminPage({ onClose }) {
                                   title="Delete User"
                                   onClick={() => handleDeleteUser(u.id, u.username)}
                                 >
-                                  🗑️
+                                  ❌
                                 </button>
                               </div>
                             </td>
@@ -374,7 +374,7 @@ function AdminPage({ onClose }) {
             </div>
           )}
 
-          {/* ── Reviews ───────────────────────────────────────────────────── */}
+          {/* Reviews  */}
           {tab === "reviews" && (
             <div>
               <div className="admin-search-wrap">
@@ -412,7 +412,7 @@ function AdminPage({ onClose }) {
                             className="admin-btn-danger"
                             title="Delete Review"
                             onClick={() => handleDeleteReview(r.id)}
-                          >🗑️</button>
+                          >❌</button>
                         </div>
                         <p className="admin-review-text">"{r.review}"</p>
                       </div>

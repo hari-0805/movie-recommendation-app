@@ -1,30 +1,29 @@
 import React from "react";
 
+const COLORS = [
+  "#6c63ff", "#eb3b5a", "#26de81", "#f7b731",
+  "#fd9644", "#2bcbba", "#a55eea", "#45aaf2",
+];
+
 function GenreChart({ genres }) {
   if (!genres || genres.length === 0) return null;
 
-  const colors = [
-    "#6c63ff", "#ff6584", "#43d9ad", "#f7b731",
-    "#fd9644", "#26de81", "#2bcbba", "#eb3b5a",
-  ];
-
   return (
-    <div className="genre-chart">
-      <h3 className="genre-chart-title">🎭 Your Genre Taste</h3>
-      <div className="genre-bars">
-        {genres.slice(0, 6).map((g, i) => (
-          <div key={g.genre} className="genre-row">
-            <span className="genre-name">{g.genre}</span>
-            <div className="genre-bar-track">
-              <div
-                className="genre-bar-fill"
-                style={{
-                  width: `${g.percentage}%`,
-                  background: colors[i % colors.length],
-                }}
-              />
-            </div>
-            <span className="genre-pct">{g.percentage}%</span>
+    <div className="genre-chips-wrap">
+      <span className="genre-chips-label">🎭 Your Genre Taste</span>
+      <div className="genre-chips">
+        {genres.slice(0, 8).map((g, i) => (
+          <div
+            key={g.genre}
+            className="genre-chip"
+            style={{
+              background: COLORS[i % COLORS.length] + "18",
+              border: `1px solid ${COLORS[i % COLORS.length]}44`,
+              color: COLORS[i % COLORS.length],
+            }}
+          >
+            <span className="genre-chip-name">{g.genre}</span>
+            <span className="genre-chip-pct">{g.percentage}%</span>
           </div>
         ))}
       </div>
