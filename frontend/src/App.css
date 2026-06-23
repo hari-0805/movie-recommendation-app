@@ -60,6 +60,7 @@ body {
   transition: background-color var(--transition-speed), color var(--transition-speed);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden
 }
 
 h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
@@ -371,8 +372,8 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 28px;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 12px;
 }
 
 .card {
@@ -388,6 +389,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   position: relative;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s;
   animation: cardFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+   max-width: 100%;
 }
 
 @keyframes cardFadeIn {
@@ -1224,7 +1226,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
     font-size: 12px;
   }
   .cards-grid {
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 1fr;
   }
 }
 
@@ -2392,3 +2394,14 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   opacity: 0; transition: opacity 0.15s;
 }
 .col-movie-card:hover .col-movie-remove { opacity: 1; }
+
+.header-tabs {
+  display: flex;
+  overflow-x: auto;
+  gap: 8px;
+}
+.genre-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
