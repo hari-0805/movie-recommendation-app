@@ -60,7 +60,6 @@ body {
   transition: background-color var(--transition-speed), color var(--transition-speed);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  overflow-x: hidden
 }
 
 h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
@@ -169,6 +168,25 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   color: #fff;
   border-color: var(--accent);
   box-shadow: 0 0 12px var(--accent-glow);
+}
+
+/* "More" overflow menu - hidden by default, shown only on narrow screens */
+.nav-more-wrap {
+  position: relative;
+  display: none;
+}
+.nav-more-btn {
+  padding: 8px 14px;
+  font-size: 15px;
+}
+.nav-more-dropdown {
+  min-width: 180px;
+}
+.nav-more-dropdown .dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 8px;
 }
 
 .logout-btn {
@@ -372,8 +390,8 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
 
 .cards-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 28px;
 }
 
 .card {
@@ -389,7 +407,6 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   position: relative;
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.3s ease, border-color 0.3s;
   animation: cardFadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
-   max-width: 100%;
 }
 
 @keyframes cardFadeIn {
@@ -1183,6 +1200,7 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
 @media (max-width: 768px) {
   .navbar {
     padding: 14px 20px;
+    flex-wrap: wrap;
   }
   .nav-title {
     font-size: 20px;
@@ -1199,7 +1217,8 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   }
   .card-title {
     font-size: 14px;
-    height: 38px;
+    min-height: 38px;
+    height: auto;
   }
   .watchlist-btn {
     padding: 8px;
@@ -1217,16 +1236,30 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   }
 }
 
-@media (max-width: 480px) {
+/* Below this width, collapse Favorites/Watchlist/Collections into a single "More" menu
+   so the navbar never has more items than can fit on one row. */
+@media (max-width: 600px) {
   .nav-right {
     gap: 8px;
   }
-  .theme-toggle, .nav-fav-btn, .profile-btn {
+  .nav-primary-action {
+    display: none;
+  }
+  .nav-more-wrap {
+    display: block;
+  }
+  .theme-toggle, .profile-btn {
     padding: 6px 12px;
     font-size: 12px;
   }
+  .profile-username-text {
+    display: none; /* hide username text, keep avatar initial only */
+  }
+}
+
+@media (max-width: 480px) {
   .cards-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: 1fr 1fr;
   }
 }
 
@@ -1275,6 +1308,8 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   padding-bottom: 12px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
+  mask-image: linear-gradient(to right, black 94%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to right, black 94%, transparent 100%);
 }
 .rec-carousel::-webkit-scrollbar { height: 4px; }
 .rec-carousel::-webkit-scrollbar-thumb {
@@ -2394,14 +2429,3 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
   opacity: 0; transition: opacity 0.15s;
 }
 .col-movie-card:hover .col-movie-remove { opacity: 1; }
-
-.header-tabs {
-  display: flex;
-  overflow-x: auto;
-  gap: 8px;
-}
-.genre-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
