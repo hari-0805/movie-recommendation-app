@@ -7,3 +7,4 @@ bcrypt==4.0.1
 pydantic[email]
 httpx
 python-dotenv
+psycopg2-binary
