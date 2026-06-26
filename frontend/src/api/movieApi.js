@@ -226,3 +226,37 @@ export async function removeMovieFromCollection(collectionId, movieId) {
   const res = await axiosInstance.delete(`/collections/${collectionId}/movies/${movieId}`);
   return res.data.data;
 }
+
+// NOTIFICATIONS 
+
+export async function getNotifications(limit = 20, unreadOnly = false) {
+  const res = await axiosInstance.get(
+    `/notifications?limit=${limit}&unread_only=${unreadOnly}`
+  );
+  return res.data;
+}
+
+export async function getUnreadCount() {
+  const res = await axiosInstance.get("/notifications/unread-count");
+  return res.data.unread_count;
+}
+
+export async function markNotificationRead(id) {
+  const res = await axiosInstance.patch(`/notifications/${id}/read`);
+  return res.data;
+}
+
+export async function markAllNotificationsRead() {
+  const res = await axiosInstance.patch("/notifications/read-all");
+  return res.data;
+}
+
+export async function deleteNotification(id) {
+  const res = await axiosInstance.delete(`/notifications/${id}`);
+  return res.data;
+}
+
+export async function clearAllNotifications() {
+  const res = await axiosInstance.delete("/notifications/clear-all");
+  return res.data;
+}

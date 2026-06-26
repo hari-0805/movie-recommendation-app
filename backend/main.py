@@ -9,6 +9,7 @@ from app.models.viewed_movie    import ViewedMovie
 from app.models.watchlist        import Watchlist
 from app.models.collection       import Collection, CollectionMovie
 from app.models.user_preference import UserPreference
+from app.models.notification import Notification
 from app.routes import auth, movies, favorites, history, reviews
 from app.routes.dashboard       import router as dashboard_router
 from app.routes.watchlist        import router as watchlist_router
@@ -16,6 +17,7 @@ from app.routes.profile          import router as profile_router
 from app.routes.collections      import router as collections_router
 from app.routes.admin            import router as admin_router
 from app.routes.recommendations import router as recommendations_router
+from app.routes.notifications import router as notifications_router
 
 #  Create all tables 
 from app.database.db import Base
@@ -92,6 +94,7 @@ app.include_router(profile_router)
 app.include_router(collections_router)
 app.include_router(admin_router)
 app.include_router(recommendations_router)
+app.include_router(notifications_router)
 
 # Health
 @app.get("/", tags=["Health"])

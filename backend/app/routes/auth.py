@@ -4,6 +4,7 @@ from app.database.db import get_db
 from app.models.user import User
 from app.schemas.user import UserRegister, UserLogin, TokenResponse, UserResponse
 from app.services.auth import hash_password, verify_password, create_access_token
+from app.services.notification_service import notify_welcome
 
 router = APIRouter(prefix="/auth", tags=["Authentication"])
 
@@ -31,7 +32,7 @@ def register(user_data: UserRegister, db: Session = Depends(get_db)):
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
-
+    notify_welcome(db, user.id)
     return new_user
 
 @router.post("/login")
