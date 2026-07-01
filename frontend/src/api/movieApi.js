@@ -29,6 +29,14 @@ export async function getMovieDetails(imdbID) {
   return res.data;
 }
 
+// COMPARE
+export async function compareMovies(movie1, movie2, movie3 = null) {
+  const params = new URLSearchParams({ movie1, movie2 });
+  if (movie3) params.append("movie3", movie3);
+  const res = await axiosInstance.get(`/movies/compare?${params}`);
+  return res.data;
+}
+
 export async function getFavorites() {
   const res = await axiosInstance.get("/favorites");
   return res.data;

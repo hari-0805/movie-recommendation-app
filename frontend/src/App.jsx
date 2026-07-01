@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useCallback } from "react";
+import { Routes, Route, Link } from "react-router-dom";
 import { useAuth }            from "./context/AuthContext";
 import Navbar                 from "./components/Navbar";
 import SearchBar              from "./components/SearchBar";
@@ -13,6 +14,7 @@ import FavoritesPage          from "./pages/FavoritesPage";
 import WatchlistPage          from "./pages/WatchlistPage";
 import ProfilePage            from "./pages/ProfilePage";
 import AdminPage              from "./pages/AdminPage";
+import ComparePage            from "./pages/ComparePage";
 import useDebounce            from "./hooks/useDebounce";
 import CollectionsPage from "./pages/CollectionsPage";
 import {
@@ -59,6 +61,7 @@ function App() {
   const [trending,         setTrending]         = useState([]);
   const [genres,           setGenres]           = useState([]);
   const [recLoading,       setRecLoading]       = useState(false);
+  const [compareList,      setCompareList]      = useState([]);
 
   const debouncedQuery = useDebounce(query, 500);
 
@@ -191,6 +194,27 @@ function App() {
     return watchlist.find((w) => w.movie_id === imdbID)?.id;
   }
 
+  function isInCompare(imdbID) {
+    return compareList.some((m) => m.imdbID === imdbID);
+  }
+
+  function handleToggleCompare(movie) {
+    if (isInCompare(movie.imdbID)) {
+      setCompareList((prev) => prev.filter((m) => m.imdbID !== movie.imdbID));
+      return;
+    }
+    if (compareList.length >= 2) {
+      showToast("You can only compare up to 2 movies at a time.", "error");
+      return;
+    }
+    setCompareList((prev) => [...prev, movie]);
+  }
+
+  function clearCompare() {
+    setCompareList([]);
+  }
+
+
   async function handleToggleWatchlist(movie) {
     if (!movie?.imdbID) return;
     try {
@@ -246,150 +270,196 @@ function App() {
     <div className={`app-root ${isDark ? "dark" : "light"}`}>
       {toast && <Toast message={toast.message} type={toast.type} onClose={() => setToast(null)} />}
 
-      <Navbar
-        isDark={isDark}
-        onToggleTheme={() => setIsDark(!isDark)}
-        watchlistCount={favorites.length}
-        onShowFavorites={() => { setShowFavorites(!showFavorites); setShowWatchlist(false); setShowProfile(false); }}
-        watchlistItemCount={watchlist.length}
-        onShowWatchlist={() => { setShowWatchlist(!showWatchlist); setShowFavorites(false); setShowProfile(false); }}
-        onShowProfile={() => { setShowProfile(!showProfile); setShowFavorites(false); setShowWatchlist(false); setShowAdmin(false); }}
-        onShowAdmin={() => { setShowAdmin(!showAdmin); setShowProfile(false); setShowFavorites(false); setShowWatchlist(false); }}
-        onShowCollections={() => setShowCollections(!showCollections)}
-      />
-
-      <main className="main">
-        <SearchBar query={query} onChange={setQuery} />
-
-     
-        {(recentSearches.length > 0 || trendingSearches.length > 0) && (
-          <div className="history-container">
-            {recentSearches.length > 0 && (
-              <div className="history-row">
-                <span className="history-label">Recent:</span>
-                {recentSearches.slice(0, 5).map((item, i) => (
-                  <button key={i} className="chip" onClick={() => setQuery(item.keyword)}>
-                    {item.keyword}
-                  </button>
-                ))}
-              </div>
-            )}
-            {trendingSearches.length > 0 && (
-              <div className="history-row" style={{ marginTop: "4px" }}>
-                <span className="history-label">Trending 🔥:</span>
-                {trendingSearches.slice(0, 5).map((item, i) => (
-                  <button key={i} className="chip chip-trending" onClick={() => setQuery(item.keyword)}>
-                    {item.keyword} ({item.count})
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-      
-        <RecommendationSection
-          recommendations={recommendations}
-          trending={trending}
-          genres={genres}
-          loading={recLoading}
-          onViewDetails={handleViewDetails}
-          onToggleFavorite={handleToggleFavorite}
-          isFavorite={isFavorite}
-          onRefresh={() => loadRecommendations(true)}
-        />
-
-
-        {showFavorites && (
-          <FavoritesPage favorites={favorites} onRemove={handleToggleFavorite} />
-        )}
-
-      
-        {showAdmin && (
-          <AdminPage onClose={() => setShowAdmin(false)} />
-        )}
-
-        {showCollections && (
-          <CollectionsPage
-            onClose={() => { setShowCollections(false); setCollectionMovie(null); }}
-            currentMovie={collectionMovie}
-          />
-        )}
-
-        {showProfile && (
-          <ProfilePage
-            onClose={() => setShowProfile(false)}
-            onToast={showToast}
-          />
-        )}
-
-    
-        {showWatchlist && (
-          <WatchlistPage
-            watchlist={watchlist}
-            onRemove={async (id) => {
-              await removeFromWatchlist(id);
-              setWatchlist((prev) => prev.filter((w) => w.id !== id));
-              showToast("Removed from watchlist", "error");
-            }}
-            onViewDetails={handleViewDetails}
-          />
-        )}
-
-        {error && !loading && <div className="error-box">⚠️ {error}</div>}
-
-   
-        {loading ? (
-          <div className="cards-grid">
-            {Array(8).fill(null).map((_, i) => <SkeletonCard key={i} />)}
-          </div>
-        ) : (
-          <div className="cards-grid">
-            {movies.map((movie) => (
-              <MovieCard
-                key={movie.imdbID}
-                movie={movie}
-                isAdded={isFavorite(movie.imdbID)}
-                onToggleWatchlist={handleToggleFavorite}
-                onViewDetails={handleViewDetails}
-                isWatchlisted={isInWatchlist(movie.imdbID)}
-                onToggleWatchlistItem={handleToggleWatchlist}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              <Navbar
+                isDark={isDark}
+                onToggleTheme={() => setIsDark(!isDark)}
+                watchlistCount={favorites.length}
+                onShowFavorites={() => { setShowFavorites(!showFavorites); setShowWatchlist(false); setShowProfile(false); }}
+                watchlistItemCount={watchlist.length}
+                onShowWatchlist={() => { setShowWatchlist(!showWatchlist); setShowFavorites(false); setShowProfile(false); }}
+                onShowProfile={() => { setShowProfile(!showProfile); setShowFavorites(false); setShowWatchlist(false); setShowAdmin(false); }}
+                onShowAdmin={() => { setShowAdmin(!showAdmin); setShowProfile(false); setShowFavorites(false); setShowWatchlist(false); }}
+                onShowCollections={() => setShowCollections(!showCollections)}
               />
-            ))}
-          </div>
-        )}
 
-        {!loading && !error && movies.length === 0 && debouncedQuery && (
-          <div className="empty-state">
-            <p className="empty-icon"></p>
-            <p className="empty-title">No movies found</p>
-            <p className="empty-sub">Try searching for a different title</p>
-          </div>
-        )}
+              <main className="main">
+                <SearchBar query={query} onChange={setQuery} />
 
-        {!loading && movies.length > 0 && (
-          <Pagination
-            currentPage={currentPage}
-            totalResults={totalResults}
-            onPageChange={setCurrentPage}
-          />
-        )}
-      </main>
+             
+                {(recentSearches.length > 0 || trendingSearches.length > 0) && (
+                  <div className="history-container">
+                    {recentSearches.length > 0 && (
+                      <div className="history-row">
+                        <span className="history-label">Recent:</span>
+                        {recentSearches.slice(0, 5).map((item, i) => (
+                          <button key={i} className="chip" onClick={() => setQuery(item.keyword)}>
+                            {item.keyword}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                    {trendingSearches.length > 0 && (
+                      <div className="history-row" style={{ marginTop: "4px" }}>
+                        <span className="history-label">Trending 🔥:</span>
+                        {trendingSearches.slice(0, 5).map((item, i) => (
+                          <button key={i} className="chip chip-trending" onClick={() => setQuery(item.keyword)}>
+                            {item.keyword} ({item.count})
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
 
-      {selectedMovie && (
-        <MovieModal
-          movie={selectedMovie}
-          isAdded={isFavorite(selectedMovie.imdbID)}
-          onToggleWatchlist={handleToggleFavorite}
-          onClose={() => setSelectedMovie(null)}
-          isWatchlisted={isInWatchlist(selectedMovie.imdbID)}
-          onToggleWatchlistItem={handleToggleWatchlist}
-           onAddToCollection={(movie) => {
-            setCollectionMovie(movie);
-            setShowCollections(true);
-          }}
+              
+                <RecommendationSection
+                  recommendations={recommendations}
+                  trending={trending}
+                  genres={genres}
+                  loading={recLoading}
+                  onViewDetails={handleViewDetails}
+                  onToggleFavorite={handleToggleFavorite}
+                  isFavorite={isFavorite}
+                  onRefresh={() => loadRecommendations(true)}
+                />
+
+
+                {showFavorites && (
+                  <FavoritesPage favorites={favorites} onRemove={handleToggleFavorite} />
+                )}
+
+              
+                {showAdmin && (
+                  <AdminPage onClose={() => setShowAdmin(false)} />
+                )}
+
+                {showCollections && (
+                  <CollectionsPage
+                    onClose={() => { setShowCollections(false); setCollectionMovie(null); }}
+                    currentMovie={collectionMovie}
+                  />
+                )}
+
+                {showProfile && (
+                  <ProfilePage
+                    onClose={() => setShowProfile(false)}
+                    onToast={showToast}
+                  />
+                )}
+
+            
+                {showWatchlist && (
+                  <WatchlistPage
+                    watchlist={watchlist}
+                    onRemove={async (id) => {
+                      await removeFromWatchlist(id);
+                      setWatchlist((prev) => prev.filter((w) => w.id !== id));
+                      showToast("Removed from watchlist", "error");
+                    }}
+                    onViewDetails={handleViewDetails}
+                  />
+                )}
+
+                {error && !loading && <div className="error-box">⚠️ {error}</div>}
+
+           
+                {loading ? (
+                  <div className="cards-grid">
+                    {Array(8).fill(null).map((_, i) => <SkeletonCard key={i} />)}
+                  </div>
+                ) : (
+                  <div className="cards-grid">
+                    {movies.map((movie) => (
+                      <MovieCard
+                        key={movie.imdbID}
+                        movie={movie}
+                        isAdded={isFavorite(movie.imdbID)}
+                        onToggleWatchlist={handleToggleFavorite}
+                        onViewDetails={handleViewDetails}
+                        isWatchlisted={isInWatchlist(movie.imdbID)}
+                        onToggleWatchlistItem={handleToggleWatchlist}
+                        isCompareSelected={isInCompare(movie.imdbID)}
+                        onToggleCompare={handleToggleCompare}
+                        compareDisabled={compareList.length >= 2}
+                      />
+                    ))}
+                  </div>
+                )}
+
+                {!loading && !error && movies.length === 0 && debouncedQuery && (
+                  <div className="empty-state">
+                    <p className="empty-icon"></p>
+                    <p className="empty-title">No movies found</p>
+                    <p className="empty-sub">Try searching for a different title</p>
+                  </div>
+                )}
+
+                {!loading && movies.length > 0 && (
+                  <Pagination
+                    currentPage={currentPage}
+                    totalResults={totalResults}
+                    onPageChange={setCurrentPage}
+                  />
+                )}
+              </main>
+
+              {selectedMovie && (
+                <MovieModal
+                  movie={selectedMovie}
+                  isAdded={isFavorite(selectedMovie.imdbID)}
+                  onToggleWatchlist={handleToggleFavorite}
+                  onClose={() => setSelectedMovie(null)}
+                  isWatchlisted={isInWatchlist(selectedMovie.imdbID)}
+                  onToggleWatchlistItem={handleToggleWatchlist}
+                   onAddToCollection={(movie) => {
+                    setCollectionMovie(movie);
+                    setShowCollections(true);
+                  }}
+                />
+              )}
+
+              {compareList.length > 0 && (
+                <div className="compare-bar">
+                  <div className="compare-bar-items">
+                    {compareList.map((m) => (
+                      <div className="compare-bar-item" key={m.imdbID}>
+                        <img
+                          src={m.Poster && m.Poster !== "N/A" ? m.Poster : "https://placehold.co/60x90?text=N/A"}
+                          alt={m.Title}
+                        />
+                        <span>{m.Title}</span>
+                        <button onClick={() => handleToggleCompare(m)} title="Remove">✕</button>
+                      </div>
+                    ))}
+                    {compareList.length < 2 && (
+                      <span className="compare-bar-hint">Select {2 - compareList.length} more movie{2 - compareList.length > 1 ? "s" : ""} to compare</span>
+                    )}
+                  </div>
+                  <div className="compare-bar-actions">
+                    <button className="compare-bar-clear" onClick={clearCompare}>Clear</button>
+                    {compareList.length === 2 ? (
+                      <Link
+                        className="compare-bar-go"
+                        to={`/compare?movie1=${compareList[0].imdbID}&movie2=${compareList[1].imdbID}`}
+                      >
+                        Compare Now
+                      </Link>
+                    ) : (
+                      <button className="compare-bar-go" disabled>Compare Now</button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </>
+          }
         />
-      )}
+        <Route path="/compare" element={<ComparePage />} />
+      </Routes>
     </div>
   );
 }

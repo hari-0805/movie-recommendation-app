@@ -1,13 +1,13 @@
 import React from "react";
 
-function MovieCard({ movie, isAdded, onToggleWatchlist, onViewDetails, isWatchlisted, onToggleWatchlistItem }) {
+function MovieCard({ movie, isAdded, onToggleWatchlist, onViewDetails, isWatchlisted, onToggleWatchlistItem, isCompareSelected, onToggleCompare, compareDisabled }) {
   const posterSrc =
     movie.Poster && movie.Poster !== "N/A"
       ? movie.Poster
       : "https://placehold.co/300x450?text=No+Poster";
 
   return (
-    <div className="card" onClick={() => onViewDetails(movie.imdbID)}>
+    <div className={`card ${isCompareSelected ? "card-compare-selected" : ""}`} onClick={() => onViewDetails(movie.imdbID)}>
       <div className="card-poster-wrap">
         <img src={posterSrc} alt={movie.Title} className="card-poster" />
         <span className="card-year-badge">{movie.Year}</span>
@@ -31,6 +31,16 @@ function MovieCard({ movie, isAdded, onToggleWatchlist, onViewDetails, isWatchli
             {isWatchlisted ? " Watchlist" : " Watch Later"}
           </button>
         </div>
+        {onToggleCompare && (
+          <button
+            className={`compare-btn ${isCompareSelected ? "active" : ""}`}
+            disabled={!isCompareSelected && compareDisabled}
+            onClick={(e) => { e.stopPropagation(); onToggleCompare(movie); }}
+            title={isCompareSelected ? "Remove from comparison" : "Add to comparison"}
+          >
+            {isCompareSelected ? "✓ Added to Compare" : "⚖️ Compare"}
+          </button>
+        )}
       </div>
     </div>
   );
