@@ -15,6 +15,7 @@ import WatchlistPage          from "./pages/WatchlistPage";
 import ProfilePage            from "./pages/ProfilePage";
 import AdminPage              from "./pages/AdminPage";
 import ComparePage            from "./pages/ComparePage";
+import WatchedHistoryPage     from "./pages/WatchedHistoryPage";
 import useDebounce            from "./hooks/useDebounce";
 import CollectionsPage from "./pages/CollectionsPage";
 import {
@@ -32,6 +33,9 @@ import {
   getWatchlist,
   addToWatchlist,
   removeFromWatchlist,
+  getWatchedHistory,
+  markAsWatched,
+  removeFromWatched,
 } from "./api/movieApi";
 import "./App.css";
 
@@ -62,6 +66,8 @@ function App() {
   const [genres,           setGenres]           = useState([]);
   const [recLoading,       setRecLoading]       = useState(false);
   const [compareList,      setCompareList]      = useState([]);
+  const [watchedHistory,   setWatchedHistory]   = useState([]);
+  const [showWatched,      setShowWatched]       = useState(false);
 
   const debouncedQuery = useDebounce(query, 500);
 
@@ -111,11 +117,13 @@ function App() {
       loadRecommendations();
       getFavorites().then(setFavorites).catch(() => setFavorites([]));
       getWatchlist().then(setWatchlist).catch(() => setWatchlist([]));
+      getWatchedHistory().then(setWatchedHistory).catch(() => setWatchedHistory([]));
     } else {
       setRecentSearches([]);
       setTrendingSearches([]);
       setFavorites([]);
       setWatchlist([]);
+      setWatchedHistory([]);
       setRecommendations([]);
     }
   }, [loggedIn]);
@@ -214,6 +222,29 @@ function App() {
     setCompareList([]);
   }
 
+  function isWatched(imdbID) {
+    return watchedHistory.some((w) => w.movie_id === imdbID);
+  }
+
+  async function handleMarkWatched(movie) {
+    const movieId = movie.imdbID || movie.movie_id;
+    if (isWatched(movieId)) return;
+    try {
+      const result = await markAsWatched(movie);
+      setWatchedHistory((prev) => [result.data, ...prev]);
+      // Remove from watchlist state if present
+      setWatchlist((prev) => prev.filter((w) => w.movie_id !== movieId));
+      showToast(result.message || `"${movie.Title || movie.title}" marked as watched`, "success");
+    } catch (err) {
+      const msg = err.response?.data?.detail?.message || err.response?.data?.detail;
+      if (msg?.includes("already")) {
+        showToast("Already in watched history", "error");
+      } else {
+        showToast("Failed to mark as watched", "error");
+      }
+    }
+  }
+
 
   async function handleToggleWatchlist(movie) {
     if (!movie?.imdbID) return;
@@ -285,6 +316,8 @@ function App() {
                 onShowProfile={() => { setShowProfile(!showProfile); setShowFavorites(false); setShowWatchlist(false); setShowAdmin(false); }}
                 onShowAdmin={() => { setShowAdmin(!showAdmin); setShowProfile(false); setShowFavorites(false); setShowWatchlist(false); }}
                 onShowCollections={() => setShowCollections(!showCollections)}
+                onShowWatched={() => { setShowWatched(!showWatched); setShowFavorites(false); setShowWatchlist(false); setShowProfile(false); }}
+                watchedCount={watchedHistory.length}
               />
 
               <main className="main">
@@ -362,12 +395,20 @@ function App() {
                       showToast("Removed from watchlist", "error");
                     }}
                     onViewDetails={handleViewDetails}
+                    onMarkWatched={handleMarkWatched}
+                    watchedIds={watchedHistory.map((w) => w.movie_id)}
+                  />
+                )}
+
+                {showWatched && (
+                  <WatchedHistoryPage
+                    onViewDetails={handleViewDetails}
+                    onToast={showToast}
                   />
                 )}
 
                 {error && !loading && <div className="error-box">⚠️ {error}</div>}
 
-           
                 {loading ? (
                   <div className="cards-grid">
                     {Array(8).fill(null).map((_, i) => <SkeletonCard key={i} />)}
@@ -386,6 +427,8 @@ function App() {
                         isCompareSelected={isInCompare(movie.imdbID)}
                         onToggleCompare={handleToggleCompare}
                         compareDisabled={compareList.length >= 2}
+                        isWatched={isWatched(movie.imdbID)}
+                        onMarkWatched={handleMarkWatched}
                       />
                     ))}
                   </div>
@@ -459,6 +502,9 @@ function App() {
           }
         />
         <Route path="/compare" element={<ComparePage />} />
+        <Route path="/watched" element={
+          <WatchedHistoryPage onViewDetails={handleViewDetails} onToast={showToast} />
+        } />
       </Routes>
     </div>
   );

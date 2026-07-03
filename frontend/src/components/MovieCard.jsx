@@ -1,20 +1,32 @@
 import React from "react";
 
-function MovieCard({ movie, isAdded, onToggleWatchlist, onViewDetails, isWatchlisted, onToggleWatchlistItem, isCompareSelected, onToggleCompare, compareDisabled }) {
+function MovieCard({
+  movie,
+  isAdded, onToggleWatchlist,
+  onViewDetails,
+  isWatchlisted, onToggleWatchlistItem,
+  isCompareSelected, onToggleCompare, compareDisabled,
+  isWatched, onMarkWatched,
+}) {
   const posterSrc =
     movie.Poster && movie.Poster !== "N/A"
       ? movie.Poster
       : "https://placehold.co/300x450?text=No+Poster";
 
   return (
-    <div className={`card ${isCompareSelected ? "card-compare-selected" : ""}`} onClick={() => onViewDetails(movie.imdbID)}>
+    <div
+      className={`card ${isCompareSelected ? "card-compare-selected" : ""} ${isWatched ? "card-watched" : ""}`}
+      onClick={() => onViewDetails(movie.imdbID)}
+    >
       <div className="card-poster-wrap">
         <img src={posterSrc} alt={movie.Title} className="card-poster" />
         <span className="card-year-badge">{movie.Year}</span>
+        {isWatched && <span className="card-watched-badge"> Watched</span>}
       </div>
       <div className="card-body">
         <h2 className="card-title">{movie.Title}</h2>
         <p className="card-meta">{movie.Type?.toUpperCase()}</p>
+
         <div className="card-actions">
           <button
             className={`watchlist-btn ${isAdded ? "added" : ""}`}
@@ -31,6 +43,18 @@ function MovieCard({ movie, isAdded, onToggleWatchlist, onViewDetails, isWatchli
             {isWatchlisted ? " Watchlist" : " Watch Later"}
           </button>
         </div>
+
+        {onMarkWatched && (
+          <button
+            className={`watched-btn ${isWatched ? "active" : ""}`}
+            onClick={(e) => { e.stopPropagation(); onMarkWatched(movie); }}
+            title={isWatched ? "Already watched" : "Mark as watched"}
+            disabled={isWatched}
+          >
+            {isWatched ? " Watched" : " Mark as Watched"}
+          </button>
+        )}
+
         {onToggleCompare && (
           <button
             className={`compare-btn ${isCompareSelected ? "active" : ""}`}

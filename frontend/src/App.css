@@ -2955,3 +2955,248 @@ h1, h2, h3, h4, h5, h6, .nav-title, .auth-title {
     text-align: center;
   }
 }
+
+/* ===========================
+   WATCHED HISTORY FEATURE
+   =========================== */
+
+/* Card badge */
+.card-watched-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #27ae60;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.card-watched {
+  opacity: 0.88;
+}
+
+/* Mark as Watched button on MovieCard */
+.watched-btn {
+  padding: 9px;
+  border: 1px solid #27ae60;
+  background: transparent;
+  color: #27ae60;
+  font-size: 12.5px;
+  font-weight: 700;
+  border-radius: 10px;
+  cursor: pointer;
+  width: 100%;
+  margin-top: 6px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+.watched-btn:hover:not(:disabled) {
+  background: #27ae60;
+  color: #fff;
+}
+.watched-btn.active,
+.watched-btn:disabled {
+  background: rgba(39, 174, 96, 0.12);
+  border-color: #27ae60;
+  color: #27ae60;
+  opacity: 0.7;
+  cursor: default;
+}
+.watched-btn.mini {
+  width: auto;
+  padding: 5px 10px;
+  font-size: 11.5px;
+  margin-top: 0;
+  border-radius: 8px;
+}
+
+/* Watchlist panel tabs */
+.watchlist-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 10px;
+}
+.watchlist-tab {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13.5px;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.18s;
+  display: flex;
+  align-items: center;
+}
+.watchlist-tab:hover { background: var(--bg); color: var(--text); }
+.watchlist-tab.active {
+  background: var(--accent);
+  color: #fff;
+}
+.fav-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+/* Navbar watched button */
+.nav-watched-btn {
+  border-color: #27ae60 !important;
+  color: #27ae60 !important;
+}
+.nav-watched-btn:hover {
+  background: #27ae60 !important;
+  color: #fff !important;
+}
+
+/* Watched History Page */
+.watched-page {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 28px 20px 80px;
+}
+.watched-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+.watched-title {
+  font-size: 26px;
+  color: var(--text);
+  margin-bottom: 4px;
+}
+.watched-subtitle {
+  font-size: 13.5px;
+  color: var(--muted);
+}
+.watched-controls {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+.watched-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  flex: 1;
+}
+.chip-active {
+  background: var(--accent) !important;
+  color: #fff !important;
+  border-color: var(--accent) !important;
+}
+.watched-sort {
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--surface);
+  color: var(--text);
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Watched grid */
+.watched-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 18px;
+}
+.watched-card {
+  background: var(--surface);
+  border: 1px solid var(--surface-border);
+  border-radius: 14px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.watched-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+}
+.watched-poster-wrap {
+  position: relative;
+}
+.watched-poster {
+  width: 100%;
+  aspect-ratio: 2/3;
+  object-fit: cover;
+  display: block;
+}
+.watched-badge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #27ae60;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.watched-info {
+  padding: 10px 12px 12px;
+}
+.watched-movie-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.watched-year, .watched-genre, .watched-imdb, .watched-date {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+.watched-imdb { color: #f39c12; }
+.watched-date { font-size: 11.5px; margin-top: 6px; }
+.watched-remove-btn {
+  margin-top: 8px;
+  width: 100%;
+  padding: 6px;
+  font-size: 11.5px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: none;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.watched-remove-btn:hover {
+  background: #eb3b5a;
+  color: #fff;
+  border-color: #eb3b5a;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .watched-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .watched-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+@media (max-width: 420px) {
+  .watched-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+}

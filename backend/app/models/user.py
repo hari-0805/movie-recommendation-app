@@ -20,4 +20,4 @@ class User(Base):
     watchlist      = relationship("Watchlist",       back_populates="user", cascade="all, delete-orphan")
     collections    = relationship("Collection",      back_populates="user", cascade="all, delete-orphan")
     notifications  = relationship("Notification",   foreign_keys="[Notification.user_id]",back_populates="user", cascade="all, delete-orphan")
-    
+    watched_history = relationship("WatchedHistory", back_populates="user", cascade="all, delete-orphan")

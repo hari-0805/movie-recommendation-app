@@ -268,3 +268,31 @@ export async function clearAllNotifications() {
   const res = await axiosInstance.delete("/notifications/clear-all");
   return res.data;
 }
+
+// WATCHED HISTORY
+export async function getWatchedHistory() {
+  const res = await axiosInstance.get("/watched");
+  return res.data.data;
+}
+
+export async function markAsWatched(movie) {
+  const res = await axiosInstance.post("/watched", {
+    movie_id:    movie.imdbID   || movie.movie_id,
+    title:       movie.Title    || movie.title,
+    year:        movie.Year     || movie.year    || "",
+    poster:      (movie.Poster !== "N/A" ? movie.Poster : "") || movie.poster || "",
+    genre:       movie.Genre    || movie.genre   || "",
+    imdb_rating: movie.imdbRating || movie.imdb_rating || "",
+  });
+  return res.data;
+}
+
+export async function removeFromWatched(movieId) {
+  const res = await axiosInstance.delete(`/watched/${movieId}`);
+  return res.data;
+}
+
+export async function getWatchedStatus(movieId) {
+  const res = await axiosInstance.get(`/watched/status/${movieId}`);
+  return res.data;
+}

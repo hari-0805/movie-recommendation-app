@@ -3,7 +3,8 @@ import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
 
 function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
-                  watchlistItemCount, onShowWatchlist, onShowProfile, onShowAdmin, onShowCollections }) {
+                  watchlistItemCount, onShowWatchlist, onShowProfile, onShowAdmin,
+                  onShowCollections, onShowWatched, watchedCount }) {
   const { user, logout } = useAuth();
   const [showDropdown, setShowDropdown] = useState(false);
   const [showMoreMenu, setShowMoreMenu] = useState(false);
@@ -41,6 +42,11 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
            Collections
         </button>
 
+        <button className="nav-fav-btn nav-watched-btn nav-primary-action" onClick={onShowWatched}>
+           Watched
+          {watchedCount > 0 && <span className="nav-badge">{watchedCount}</span>}
+        </button>
+
         {/* Collapsed "More" menu - hidden on tablet/desktop, shown on mobile via CSS */}
         <div className="nav-more-wrap" ref={moreMenuRef}>
           <button
@@ -74,6 +80,13 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
                 onClick={() => { onShowCollections(); setShowMoreMenu(false); }}
               >
                 Collections
+              </button>
+              <button
+                className="dropdown-item"
+                onClick={() => { onShowWatched(); setShowMoreMenu(false); }}
+              >
+                 Watched
+                {watchedCount > 0 && <span className="nav-badge">{watchedCount}</span>}
               </button>
             </div>
           )}

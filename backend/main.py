@@ -18,6 +18,8 @@ from app.routes.collections      import router as collections_router
 from app.routes.admin            import router as admin_router
 from app.routes.recommendations import router as recommendations_router
 from app.routes.notifications import router as notifications_router
+from app.models.watched_history  import WatchedHistory
+from app.routes.watched          import router as watched_router
 
 #  Create all tables 
 from app.database.db import Base
@@ -95,6 +97,7 @@ app.include_router(collections_router)
 app.include_router(admin_router)
 app.include_router(recommendations_router)
 app.include_router(notifications_router)
+app.include_router(watched_router)
 
 # Health
 @app.get("/", tags=["Health"])
