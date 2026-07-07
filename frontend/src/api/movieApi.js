@@ -164,6 +164,26 @@ export async function changePassword(currentPassword, newPassword, confirmPasswo
   return res.data;
 }
 
+export async function getProfileStats() {
+  const res = await axiosInstance.get("/profile/stats");
+  return res.data;
+}
+
+export async function getPreferences() {
+  const res = await axiosInstance.get("/profile/preferences");
+  return res.data;
+}
+
+export async function addPreference(genre) {
+  const res = await axiosInstance.post("/profile/preferences", { genre });
+  return res.data;
+}
+
+export async function deletePreference(id) {
+  const res = await axiosInstance.delete(`/profile/preferences/${id}`);
+  return res.data;
+}
+
 // ADMIN 
 export async function getAdminStats() {
   const res = await axiosInstance.get("/admin/stats");
