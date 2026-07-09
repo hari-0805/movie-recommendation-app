@@ -144,6 +144,26 @@ export async function removeFromWatchlist(id) {
   await axiosInstance.delete(`/watchlist/${id}`);
 }
 
+export async function getDashboardStats() {
+  const res = await axiosInstance.get("/dashboard");
+  return res.data;
+}
+
+export async function getDashboardGenres() {
+  const res = await axiosInstance.get("/dashboard/genres");
+  return res.data;
+}
+
+export async function getDashboardMonthly() {
+  const res = await axiosInstance.get("/dashboard/monthly");
+  return res.data;
+}
+
+export async function getDashboardRecent() {
+  const res = await axiosInstance.get("/dashboard/recent");
+  return res.data;
+}
+
 // PROFILE 
 export async function getProfile() {
   const res = await axiosInstance.get("/profile");

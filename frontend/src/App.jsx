@@ -16,6 +16,7 @@ import ProfilePage            from "./pages/ProfilePage";
 import AdminPage              from "./pages/AdminPage";
 import ComparePage            from "./pages/ComparePage";
 import WatchedHistoryPage     from "./pages/WatchedHistoryPage";
+import DashboardPage          from "./pages/DashboardPage";
 import useDebounce            from "./hooks/useDebounce";
 import CollectionsPage from "./pages/CollectionsPage";
 import {
@@ -504,6 +505,9 @@ function App() {
         <Route path="/compare" element={<ComparePage />} />
         <Route path="/watched" element={
           <WatchedHistoryPage onViewDetails={handleViewDetails} onToast={showToast} />
+        } />
+        <Route path="/dashboard" element={
+          <DashboardPage onViewDetails={handleViewDetails} onToast={showToast} />
         } />
       </Routes>
     </div>

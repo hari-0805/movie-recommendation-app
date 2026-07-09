@@ -1,4 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
+import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import NotificationBell from "./NotificationBell";
 
@@ -41,6 +42,10 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
         <button className="nav-fav-btn nav-col-btn nav-primary-action" onClick={onShowCollections}>
            Collections
         </button>
+
+        <Link to="/dashboard" className="nav-fav-btn nav-dashboard-btn nav-primary-action">
+           Dashboard
+        </Link>
 
         <button className="nav-fav-btn nav-watched-btn nav-primary-action" onClick={onShowWatched}>
            Watched
@@ -88,6 +93,13 @@ function Navbar({ isDark, onToggleTheme, watchlistCount, onShowFavorites,
                  Watched
                 {watchedCount > 0 && <span className="nav-badge">{watchedCount}</span>}
               </button>
+              <Link
+                to="/dashboard"
+                className="dropdown-item"
+                onClick={() => setShowMoreMenu(false)}
+              >
+                 Dashboard
+              </Link>
             </div>
           )}
         </div>
