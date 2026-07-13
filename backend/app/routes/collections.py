@@ -21,7 +21,7 @@ def _build_response(col: Collection, include_owner: bool = False) -> dict:
         "name":            col.name,
         "description":     col.description or "",
         "emoji":           col.emoji or "🎬",
-        "is_public":       col.is_public or False,
+        "is_public":        getattr(col, "is_public", False) or False,
         "movie_count":     len(movies),
         "created_at":      col.created_at,
         "updated_at":      col.updated_at,
