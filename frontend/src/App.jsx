@@ -511,7 +511,7 @@ function App() {
         <Route path="/dashboard" element={
           <DashboardPage onViewDetails={handleViewDetails} onToast={showToast} />
         } />
-           <Route path="/collections" element={
+        <Route path="/collections" element={
           <CollectionsPage onToast={showToast} />
         } />
         <Route path="/collections/public" element={
