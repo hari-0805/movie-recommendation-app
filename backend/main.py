@@ -105,16 +105,12 @@ def root():
     return {"message": "Movie API v3.0 is running ✅"}
 
 # Migrate: add is_public column if not exists
-from sqlalchemy import text, inspect
-
-# Safe migration: add is_public to collections if missing
+# Safe migration on startup
 try:
+    from sqlalchemy import text
     with engine.connect() as conn:
-        inspector = inspect(engine)
-        columns = [c["name"] for c in inspector.get_columns("collections")]
-        if "is_public" not in columns:
-            conn.execute(text("ALTER TABLE collections ADD COLUMN is_public BOOLEAN DEFAULT 0"))
-            conn.commit()
-            print("Migration: is_public column added")
-except Exception as e:
-    print(f"Migration skipped: {e}")
+        conn.execute(text("ALTER TABLE collections ADD COLUMN is_public BOOLEAN DEFAULT 0"))
+        conn.commit()
+        print("Migration: is_public added")
+except Exception:
+    pass  # Column already exists, ignore
