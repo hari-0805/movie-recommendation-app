@@ -25,6 +25,19 @@ from app.routes.watched          import router as watched_router
 from app.database.db import Base
 Base.metadata.create_all(bind=engine)
 
+# Create all tables
+from app.database.db import Base
+Base.metadata.create_all(bind=engine)
+
+# Migrate: add is_public to collections if missing
+from sqlalchemy import text
+with engine.connect() as _conn:
+    try:
+        _conn.execute(text("ALTER TABLE collections ADD COLUMN is_public BOOLEAN DEFAULT FALSE"))
+        _conn.commit()
+    except Exception:
+        _conn.rollback()
+
 #  App 
 app = FastAPI(
     title="Movie Recommendation API",
@@ -104,11 +117,3 @@ app.include_router(watched_router)
 def root():
     return {"message": "Movie API v3.0 is running ✅"}
 
-# Migrate: add is_public column if not exists
-from sqlalchemy import text
-try:
-    with engine.connect() as conn:
-        conn.execute(text("ALTER TABLE collections ADD COLUMN is_public BOOLEAN DEFAULT 0"))
-        conn.commit()
-except Exception:
-    pass  # Column already exists
