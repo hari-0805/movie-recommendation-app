@@ -44,7 +44,17 @@ app = FastAPI(
     description="Auth · Movies · Favorites · Reviews · History · Dashboard · Recommendations",
     version="3.0.0",
 )
-
+@app.on_event("startup")
+async def run_migrations():
+    from sqlalchemy import text
+    try:
+        with engine.connect() as conn:
+            conn.execute(text(
+                "ALTER TABLE collections ADD COLUMN IF NOT EXISTS is_public BOOLEAN DEFAULT FALSE"
+            ))
+            conn.commit()
+    except Exception:
+        pass
 #  CORS 
 app.add_middleware(
     CORSMiddleware,
