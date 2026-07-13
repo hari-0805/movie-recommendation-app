@@ -103,3 +103,12 @@ app.include_router(watched_router)
 @app.get("/", tags=["Health"])
 def root():
     return {"message": "Movie API v3.0 is running ✅"}
+
+# Migrate: add is_public column if not exists
+from sqlalchemy import text
+try:
+    with engine.connect() as conn:
+        conn.execute(text("ALTER TABLE collections ADD COLUMN is_public BOOLEAN DEFAULT 0"))
+        conn.commit()
+except Exception:
+    pass  # Column already exists

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Boolean
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
 from app.database.db import Base
@@ -12,6 +12,7 @@ class Collection(Base):
     name        = Column(String(200), nullable=False)
     description = Column(String(1000), default="")
     emoji       = Column(String(10), default="🎬")
+    is_public   = Column(Boolean, default=False, nullable=False)
     created_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc), nullable=False)
     updated_at  = Column(DateTime, default=lambda: datetime.now(timezone.utc),
                          onupdate=lambda: datetime.now(timezone.utc))

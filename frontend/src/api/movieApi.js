@@ -244,13 +244,28 @@ export async function getCollections() {
   return res.data.data;
 }
 
-export async function createCollection(name, description, emoji) {
-  const res = await axiosInstance.post("/collections", { name, description, emoji });
+export async function getPublicCollections() {
+  const res = await axiosInstance.get("/collections/public");
   return res.data.data;
 }
 
-export async function updateCollection(id, name, description, emoji) {
-  const res = await axiosInstance.put(`/collections/${id}`, { name, description, emoji });
+export async function searchCollections(query) {
+  const res = await axiosInstance.get(`/collections/search?query=${encodeURIComponent(query)}`);
+  return res.data.data;
+}
+
+export async function getCollectionById(id) {
+  const res = await axiosInstance.get(`/collections/${id}`);
+  return res.data.data;
+}
+
+export async function createCollection(name, description, emoji, is_public = false) {
+  const res = await axiosInstance.post("/collections", { name, description, emoji, is_public });
+  return res.data.data;
+}
+
+export async function updateCollection(id, name, description, emoji, is_public) {
+  const res = await axiosInstance.put(`/collections/${id}`, { name, description, emoji, is_public });
   return res.data.data;
 }
 

@@ -17,6 +17,8 @@ import AdminPage              from "./pages/AdminPage";
 import ComparePage            from "./pages/ComparePage";
 import WatchedHistoryPage     from "./pages/WatchedHistoryPage";
 import DashboardPage          from "./pages/DashboardPage";
+import CollectionDetails      from "./pages/CollectionDetails";
+import PublicCollections      from "./pages/PublicCollections";
 import useDebounce            from "./hooks/useDebounce";
 import CollectionsPage from "./pages/CollectionsPage";
 import {
@@ -509,7 +511,14 @@ function App() {
         <Route path="/dashboard" element={
           <DashboardPage onViewDetails={handleViewDetails} onToast={showToast} />
         } />
+        <Route path="/collections/public" element={
+          <PublicCollections onToast={showToast} />
+        } />
+        <Route path="/collections/:id" element={
+          <CollectionDetails onViewDetails={handleViewDetails} onToast={showToast} />
+        } />
       </Routes>
+      
     </div>
   );
 }

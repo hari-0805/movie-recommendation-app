@@ -1,29 +1,32 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
+from sqlalchemy import or_
 from app.database.db import get_db
 from app.models.user import User
-from app.services.auth import get_current_user
 from app.models.collection import Collection, CollectionMovie
 from app.schemas.collection import (
     CollectionCreate, CollectionUpdate,
-    CollectionResponse, CollectionListItem, CollectionMovieItem
+    CollectionResponse, CollectionListItem, CollectionMovieItem,
 )
-from typing import List
+from app.services.auth import get_current_user
+from typing import List, Optional
 
 router = APIRouter(prefix="/collections", tags=["Collections"], redirect_slashes=False)
 
 
-def _build_response(col: Collection) -> dict:
+def _build_response(col: Collection, include_owner: bool = False) -> dict:
     movies = col.movies or []
-    return {
-        "id":          col.id,
-        "name":        col.name,
-        "description": col.description or "",
-        "emoji":       col.emoji or "🎬",
-        "movie_count": len(movies),
-        "created_at":  col.created_at,
-        "updated_at":  col.updated_at,
-        "movies":      [
+    result = {
+        "id":              col.id,
+        "name":            col.name,
+        "description":     col.description or "",
+        "emoji":           col.emoji or "🎬",
+        "is_public":       col.is_public or False,
+        "movie_count":     len(movies),
+        "created_at":      col.created_at,
+        "updated_at":      col.updated_at,
+        "preview_posters": [m.poster for m in movies if m.poster][:4],
+        "movies": [
             {
                 "movie_id": m.movie_id,
                 "title":    m.title or "",
@@ -33,47 +36,54 @@ def _build_response(col: Collection) -> dict:
             }
             for m in sorted(movies, key=lambda x: x.added_at or "", reverse=True)
         ],
-        "preview_posters": [
-            m.poster for m in movies if m.poster
-        ][:4],
     }
+    if include_owner and col.user:
+        result["owner_username"] = col.user.username
+    return result
 
 
-#CRUD 
+# ── Public routes (no auth needed for reading) ─────────────────────────────────
 
-@router.post("", status_code=201)
-def create_collection(
-    data:         CollectionCreate,
-    db:           Session = Depends(get_db),
-    current_user: User    = Depends(get_current_user),
+@router.get("/public")
+def get_public_collections(
+    db: Session = Depends(get_db),
 ):
-    # Prevent duplicate name per user
-    existing = db.query(Collection).filter(
-        Collection.user_id == current_user.id,
-        Collection.name    == data.name.strip(),
-    ).first()
-    if existing:
-        raise HTTPException(
-            status_code=400,
-            detail={"success": False, "message": "A collection with this name already exists"},
-        )
-
-    col = Collection(
-        user_id=current_user.id,
-        name=data.name.strip(),
-        description=data.description.strip(),
-        emoji=data.emoji or "🎬",
+    cols = (
+        db.query(Collection)
+        .filter(Collection.is_public == True)
+        .order_by(Collection.created_at.desc())
+        .all()
     )
-    db.add(col)
-    db.commit()
-    db.refresh(col)
-    return {"success": True, "data": _build_response(col)}
+    return {"success": True, "data": [_build_response(c, include_owner=True) for c in cols]}
 
+
+@router.get("/search")
+def search_collections(
+    query: str = Query("", min_length=1),
+    db:    Session = Depends(get_db),
+):
+    q = f"%{query.strip()}%"
+    cols = (
+        db.query(Collection)
+        .join(Collection.user)
+        .filter(
+            Collection.is_public == True,
+            or_(
+                Collection.name.ilike(q),
+                User.username.ilike(q),
+            )
+        )
+        .order_by(Collection.created_at.desc())
+        .all()
+    )
+    return {"success": True, "data": [_build_response(c, include_owner=True) for c in cols]}
+
+
+# ── Authenticated CRUD ──────────────────────────────────────────────────────────
 
 @router.get("")
 def get_collections(
     db:           Session = Depends(get_db),
-    current_user: User    = Depends(get_current_user),
 ):
     cols = (
         db.query(Collection)
@@ -84,19 +94,45 @@ def get_collections(
     return {"success": True, "data": [_build_response(c) for c in cols]}
 
 
+@router.post("", status_code=201)
+def create_collection(
+    data:         CollectionCreate,
+    db:           Session = Depends(get_db),
+    current_user: User    = Depends(get_current_user),
+):
+    existing = db.query(Collection).filter(
+        Collection.user_id == current_user.id,
+        Collection.name    == data.name.strip(),
+    ).first()
+    if existing:
+        raise HTTPException(400, detail={"success": False, "message": "A collection with this name already exists"})
+
+    col = Collection(
+        user_id     = current_user.id,
+        name        = data.name.strip(),
+        description = data.description.strip(),
+        emoji       = data.emoji or "🎬",
+        is_public   = data.is_public,
+    )
+    db.add(col)
+    db.commit()
+    db.refresh(col)
+    return {"success": True, "data": _build_response(col)}
+
+
 @router.get("/{collection_id}")
 def get_collection(
     collection_id: int,
     db:            Session = Depends(get_db),
     current_user:  User    = Depends(get_current_user),
 ):
-    col = db.query(Collection).filter(
-        Collection.id      == collection_id,
-        Collection.user_id == current_user.id,
-    ).first()
+    col = db.query(Collection).filter(Collection.id == collection_id).first()
     if not col:
         raise HTTPException(404, detail={"success": False, "message": "Collection not found"})
-    return {"success": True, "data": _build_response(col)}
+    # Allow viewing own collections or public ones
+    if col.user_id != current_user.id and not col.is_public:
+        raise HTTPException(403, detail={"success": False, "message": "Access denied"})
+    return {"success": True, "data": _build_response(col, include_owner=True)}
 
 
 @router.put("/{collection_id}")
@@ -114,7 +150,6 @@ def update_collection(
         raise HTTPException(404, detail={"success": False, "message": "Collection not found"})
 
     if data.name is not None:
-        # Check name uniqueness excluding self
         conflict = db.query(Collection).filter(
             Collection.user_id == current_user.id,
             Collection.name    == data.name.strip(),
@@ -128,6 +163,8 @@ def update_collection(
         col.description = data.description.strip()
     if data.emoji is not None:
         col.emoji = data.emoji
+    if data.is_public is not None:
+        col.is_public = data.is_public
 
     db.commit()
     db.refresh(col)
@@ -146,12 +183,13 @@ def delete_collection(
     ).first()
     if not col:
         raise HTTPException(404, detail={"success": False, "message": "Collection not found"})
+    name = col.name
     db.delete(col)
     db.commit()
-    return {"success": True, "message": f'"{col.name}" deleted'}
+    return {"success": True, "message": f'"{name}" deleted'}
 
 
-# Movie management 
+# ── Collection Movies ───────────────────────────────────────────────────────────
 
 @router.post("/{collection_id}/movies", status_code=201)
 def add_movie(
@@ -175,12 +213,12 @@ def add_movie(
         raise HTTPException(400, detail={"success": False, "message": "Movie already in this collection"})
 
     movie = CollectionMovie(
-        collection_id=collection_id,
-        movie_id=data.movie_id,
-        title=data.title,
-        year=data.year,
-        poster=data.poster,
-        genre=data.genre,
+        collection_id = collection_id,
+        movie_id = data.movie_id,
+        title    = data.title,
+        year     = data.year,
+        poster   = data.poster,
+        genre    = data.genre,
     )
     db.add(movie)
     db.commit()
